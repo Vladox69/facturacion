@@ -3,21 +3,42 @@ import { Outlet, Link, useLocation } from "react-router-dom";
 import {
   Menu,
   Users,
+  Building,
   Settings as SettingsIcon,
   LayoutDashboard,
+  User as UserIcon,
+  Briefcase,
+  UserCog 
 } from "lucide-react";
 
 export default function DashboardLayout() {
   const [isOpen, setIsOpen] = useState(true);
   const location = useLocation();
 
-  const navItems = [
-    { name: "Usuarios", icon: <Users size={20} />, path: "/admin/user" },
-    { name: "Configuración", icon: <SettingsIcon size={20} />, path: "/admin/settings" }
-  ];
+  // Detectar rol según ruta
+  const rolePath = location.pathname.startsWith("/admin") ? "admin"
+                : location.pathname.startsWith("/user") ? "user"
+                : "guest";
+
+  // Menús por rol
+  const navItemsByRole = {
+    admin: [
+      { name: "Usuarios", icon: <Users size={20} />, path: "/admin/users" },
+      { name: "Empresas", icon: <Building size={20} />, path: "/admin/business" },
+      { name: "Configuración", icon: <SettingsIcon size={20} />, path: "/admin/settings" },
+    ],
+    user: [
+      { name: "Mi Perfil", icon: <UserIcon size={20} />, path: "/user/profile" },
+      { name: "Localidades", icon: <Briefcase size={20} />, path: "/user/location" },
+      {name:"Pesonal", icon: <UserCog size={20} />, path: "/user/staff"},
+    ],
+    guest: [],
+  };
+
+  const navItems = navItemsByRole[rolePath];
 
   return (
-    <div className="flex min-h-screen ">
+    <div className="flex min-h-screen">
       {/* Sidebar */}
       <aside className={`bg-white shadow-md p-4 transition-all ${isOpen ? "w-64" : "w-16"}`}>
         <div className="flex items-center justify-between mb-6">
@@ -26,6 +47,7 @@ export default function DashboardLayout() {
             <Menu size={24} />
           </button>
         </div>
+
         <nav className="flex flex-col gap-4">
           {navItems.map((item) => (
             <Link
@@ -43,7 +65,7 @@ export default function DashboardLayout() {
       </aside>
 
       {/* Main content */}
-      <main className="flex-1 p-6">
+      <main className="flex-1 p-6 bg-gray-50">
         <Outlet />
       </main>
     </div>

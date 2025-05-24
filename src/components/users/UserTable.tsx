@@ -2,7 +2,6 @@ import { useState } from "react";
 import { MoreVertical, Edit, Trash2 } from "lucide-react";
 
 export default function UserTable({ users, onEdit, onDelete }) {
-  const [openMenuId, setOpenMenuId] = useState(null);
 
   return (
     <div className="overflow-hidden rounded-md bg-white shadow-sm">
@@ -21,37 +20,21 @@ export default function UserTable({ users, onEdit, onDelete }) {
               <td className="p-4">{user.name}</td>
               <td className="p-4">{user.email}</td>
               <td className="p-4">{user.role}</td>
-              <td className="p-4 text-center relative">
-                <button
-                  onClick={() => setOpenMenuId(openMenuId === user._id ? null : user._id)}
-                  className="hover:bg-gray-100 rounded-full p-2"
-                >
-                  <MoreVertical size={18} />
-                </button>
-
-                {openMenuId === user._id && (
-                  <div className="absolute right-6 top-10 z-10 bg-white shadow-md rounded-md border w-40">
-                    <div className="px-3 py-2 text-gray-600 border-b text-sm font-semibold">Acciones</div>
-                    <button
-                      onClick={() => {
-                        onEdit(user);
-                        setOpenMenuId(null);
-                      }}
-                      className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full"
-                    >
-                      <Edit size={16} /> Editar
-                    </button>
-                    <button
-                      onClick={() => {
-                        onDelete(user._id);
-                        setOpenMenuId(null);
-                      }}
-                      className="flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 w-full"
-                    >
-                      <Trash2 size={16} /> Eliminar
-                    </button>
-                  </div>
-                )}
+              <td className="p-4 text-center">
+                <div className="flex items-center justify-center gap-2">
+                  <button
+                    onClick={() => onEdit(user)}
+                    className="flex items-center gap-1 text-sm text-blue-600 hover:underline"
+                  >
+                    <Edit size={16} />
+                  </button>
+                  <button
+                    onClick={() => onDelete(user._id)}
+                    className="flex items-center gap-1 text-sm text-red-600 hover:underline"
+                  >
+                    <Trash2 size={16} /> 
+                  </button>
+                </div>
               </td>
             </tr>
           ))}

@@ -1,42 +1,41 @@
-import { useEffect } from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 
-export default function UserForm({ onSave, editingUser, onCancel }) {
+export default function StaffForm({ onSave, editingStaff, onCancel }) {
   const formik = useFormik({
     initialValues: {
       name: "",
+      identification: "",
       email: "",
       password: "",
-      role: "USER",
+      role: "staff",
+      active: true,
     },
     enableReinitialize: true,
     validationSchema: Yup.object({
-      name: Yup.string().required("El nombre es obligatorio"),
-      email: Yup.string().email("Email inválido").required("El email es obligatorio"),
+      name: Yup.string().required("Requerido"),
+      identification: Yup.string().required("Requerido"),
+      email: Yup.string().email("Email inválido").required("Requerido"),
       password: Yup.string().when("id", {
-        is: () => !editingUser,
-        then: (schema) => schema.required("Contraseña obligatoria"),
-        otherwise: (schema) => schema,
+        is: () => !editingStaff,
+        then: (s) => s.required("Contraseña requerida"),
       }),
-      role: Yup.string().oneOf(["USER", "ADMIN"]),
+      role: Yup.string().oneOf(["staff", "admin"]),
     }),
     onSubmit: (values, { resetForm }) => {
-      const user = { ...editingUser, ...values };
-      if (!values.password) delete user.password;
-      onSave(user);
+      onSave({ ...editingStaff, ...values });
       resetForm();
     },
   });
 
   return (
     <form onSubmit={formik.handleSubmit} className="space-y-5">
-      {/* Nombre */}
       <div>
         <label className="block font-medium mb-1">Nombre</label>
         <input
           type="text"
-          placeholder="Ej: Juan Pérez"
+          name="name"
+          placeholder="Ej: Carlos Pérez"
           {...formik.getFieldProps("name")}
           className="w-full rounded border border-gray-300 focus:border-gray-500 focus:outline-none px-3 py-2"
         />
@@ -45,12 +44,26 @@ export default function UserForm({ onSave, editingUser, onCancel }) {
         )}
       </div>
 
-      {/* Email */}
       <div>
-        <label className="block font-medium mb-1">Email</label>
+        <label className="block font-medium mb-1">Identificación</label>
+        <input
+          type="text"
+          name="identification"
+          placeholder="Ej: 1234567890"
+          {...formik.getFieldProps("identification")}
+          className="w-full rounded border border-gray-300 focus:border-gray-500 focus:outline-none px-3 py-2"
+        />
+        {formik.touched.identification && formik.errors.identification && (
+          <p className="text-red-500 text-sm mt-1">{formik.errors.identification}</p>
+        )}
+      </div>
+
+      <div>
+        <label className="block font-medium mb-1">Correo</label>
         <input
           type="email"
-          placeholder="Ej: correo@example.com"
+          name="email"
+          placeholder="correo@empresa.com"
           {...formik.getFieldProps("email")}
           className="w-full rounded border border-gray-300 focus:border-gray-500 focus:outline-none px-3 py-2"
         />
@@ -59,12 +72,12 @@ export default function UserForm({ onSave, editingUser, onCancel }) {
         )}
       </div>
 
-      {/* Contraseña */}
       <div>
         <label className="block font-medium mb-1">Contraseña</label>
         <input
           type="password"
-          placeholder={editingUser ? "Opcional" : "Obligatoria"}
+          name="password"
+          placeholder={editingStaff ? "Opcional" : "Obligatoria"}
           {...formik.getFieldProps("password")}
           className="w-full rounded border border-gray-300 focus:border-gray-500 focus:outline-none px-3 py-2"
         />
@@ -73,32 +86,34 @@ export default function UserForm({ onSave, editingUser, onCancel }) {
         )}
       </div>
 
-      {/* Rol */}
       <div>
         <label className="block font-medium mb-1">Rol</label>
         <select
+          name="role"
           {...formik.getFieldProps("role")}
           className="w-full rounded border border-gray-300 focus:border-gray-500 focus:outline-none px-3 py-2"
         >
-          <option value="USER">Usuario</option>
-          <option value="ADMIN">Admin</option>
+          <option value="staff">Staff</option>
+          <option value="admin">Admin</option>
         </select>
       </div>
 
-      {/* Botones */}
+      <div className="flex items-center gap-2">
+        <input
+          type="checkbox"
+          name="active"
+          checked={formik.values.active}
+          onChange={formik.handleChange}
+        />
+        <label>¿Activo?</label>
+      </div>
+
       <div className="flex justify-end gap-2 pt-2">
-        <button
-          type="button"
-          onClick={onCancel}
-          className="border px-4 py-2 rounded hover:bg-gray-100"
-        >
+        <button type="button" onClick={onCancel} className="border px-4 py-2 rounded hover:bg-gray-100">
           Cancelar
         </button>
-        <button
-          type="submit"
-          className="bg-gray-900 text-white px-4 py-2 rounded hover:bg-gray-800"
-        >
-          {editingUser ? "Actualizar Usuario" : "Crear Usuario"}
+        <button type="submit" className="bg-gray-900 text-white px-4 py-2 rounded hover:bg-gray-800">
+          {editingStaff ? "Actualizar" : "Crear"}
         </button>
       </div>
     </form>
