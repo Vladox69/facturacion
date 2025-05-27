@@ -5,6 +5,8 @@ import Users from "../pages/admin/Users";
 import Business from "../pages/admin/Business";
 import LocationPage from "../pages/user/Location";
 import StaffPage from "../pages/user/Staff";
+import ProductPage from "../pages/user/Product";
+import GenerateInvoice from "../pages/user/GenerateInvoice";
 
 const routes = [
   {
@@ -36,6 +38,14 @@ const routes = [
       {
         path: "staff",
         element: <StaffPage />,
+      },
+      {
+        path: "products",
+        element: <ProductPage />,
+      },
+      {
+        path:"invoices",
+        element:<GenerateInvoice />
       }
     ],
   },

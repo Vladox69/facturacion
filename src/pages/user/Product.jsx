@@ -1,0 +1,77 @@
+import { useState } from "react";
+import { Plus } from "lucide-react";
+import ProductForm from "../../components/products/ProductForm";
+import ProductTable from "../../components/products/ProductTable";
+
+export default function ProductPage() {
+  const [products, setProducts] = useState([
+    {
+      _id: "1",
+      name: "Coca Cola 500ml",
+      pvp: 1.5,
+      iva: "12%",
+      ice: "0%",
+      business: "Negocio A",
+    },
+  ]);
+
+  const [editing, setEditing] = useState(null);
+  const [showForm, setShowForm] = useState(false);
+
+  const saveProduct = (product) => {
+    if (product._id) {
+      setProducts((prev) => prev.map((p) => (p._id === product._id ? product : p)));
+    } else {
+      setProducts((prev) => [...prev, { ...product, _id: crypto.randomUUID() }]);
+    }
+    setShowForm(false);
+    setEditing(null);
+  };
+
+  const deleteProduct = (id) => {
+    if (confirm("¿Eliminar producto?")) {
+      setProducts((prev) => prev.filter((p) => p._id !== id));
+    }
+  };
+
+  return (
+    <div className="p-6 space-y-6">
+      <div className="flex justify-between items-center">
+        <h1 className="text-2xl font-bold">Productos</h1>
+        <button
+          onClick={() => {
+            setShowForm(true);
+            setEditing(null);
+          }}
+          className="flex items-center gap-2 bg-gray-900 text-white px-4 py-2 rounded hover:bg-gray-800"
+        >
+          <Plus size={18} /> Añadir
+        </button>
+      </div>
+
+      {showForm && (
+        <div className="bg-white p-6 rounded-md">
+          <h2 className="text-xl font-semibold">Registrar Producto</h2>
+          <p className="text-gray-500 mb-4">Completa los campos para registrar un nuevo producto.</p>
+          <ProductForm
+            onSave={saveProduct}
+            editingProduct={editing}
+            onCancel={() => {
+              setShowForm(false);
+              setEditing(null);
+            }}
+          />
+        </div>
+      )}
+
+      <ProductTable
+        products={products}
+        onEdit={(p) => {
+          setEditing(p);
+          setShowForm(true);
+        }}
+        onDelete={deleteProduct}
+      />
+    </div>
+  );
+}

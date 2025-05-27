@@ -8,7 +8,9 @@ import {
   LayoutDashboard,
   User as UserIcon,
   Briefcase,
-  UserCog 
+  UserCog,
+  Package,
+  FileText
 } from "lucide-react";
 
 export default function DashboardLayout() {
@@ -29,10 +31,14 @@ export default function DashboardLayout() {
     ],
     user: [
       { name: "Mi Perfil", icon: <UserIcon size={20} />, path: "/user/profile" },
+      { name: "Facturas", icon: <FileText size={20} />, path: "/user/invoices" },
       { name: "Localidades", icon: <Briefcase size={20} />, path: "/user/location" },
-      {name:"Pesonal", icon: <UserCog size={20} />, path: "/user/staff"},
+      { name: "Productos", icon: <Package size={20} />, path: "/user/products" },
+      { name: "Personal", icon: <UserCog size={20} />, path: "/user/staff" },
     ],
-    guest: [],
+    guest: [
+      { name: "Inicio", icon: <LayoutDashboard size={20} />, path: "/" },
+    ],
   };
 
   const navItems = navItemsByRole[rolePath];
