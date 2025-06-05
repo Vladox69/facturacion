@@ -1,80 +1,147 @@
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { useAuthStore } from "../hooks";
+import { useEffect, useState } from "react";
+import { showError } from "../helpers/swal";
 
 export default function Login() {
-  const formik = useFormik({
+  const [isRegistering, setIsRegistering] = useState(false);
+
+  const { startLogin, startRegister, errorMessage } = useAuthStore();
+
+  // Formik para login
+  const loginFormik = useFormik({
     initialValues: {
       loginEmail: "",
       loginPassword: "",
     },
-    enableReinitialize: true,
     validationSchema: Yup.object({
       loginEmail: Yup.string().required("Requerido"),
       loginPassword: Yup.string().required("Requerido"),
     }),
-    onSubmit:(values,{resetForm})=>{
-      const {loginEmail:email,loginPassword:password}=values;
-      startLogin({email,password});
-      //resetForm();
-    }
+    onSubmit: ({ loginEmail: email, loginPassword: password }) => {
+      startLogin({ email, password });
+    },
   });
 
-  const { startLogin } = useAuthStore();
+  // Formik para registro
+  const registerFormik = useFormik({
+    initialValues: {
+      registerName: "",
+      registerEmail: "",
+      registerPassword: "",
+    },
+    validationSchema: Yup.object({
+      registerName: Yup.string().required("Nombre requerido"),
+      registerEmail: Yup.string().email("Correo inválido").required("Correo requerido"),
+      registerPassword: Yup.string().min(6, "Mínimo 6 caracteres").required("Contraseña requerida"),
+    }),
+    onSubmit: ({registerEmail:email,registerName:name,registerPassword:password }) => {
+      startRegister({ email, password, name})
+    },
+  });
+
+  useEffect(() => {
+    if (errorMessage) {
+      showError(errorMessage);
+    }
+  }, [errorMessage]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
       <div className="w-full max-w-md bg-white rounded-xl shadow-md p-8 space-y-6">
         <h2 className="text-2xl font-bold text-center text-gray-800">
-          Iniciar sesión
+          {isRegistering ? "Registro" : "Iniciar sesión"}
         </h2>
-        <form onSubmit={formik.handleSubmit} className="space-y-4">
-          <div>
-            <label
-              htmlFor="loginEmail"
-              className="block text-sm font-medium text-gray-700"
+
+        {!isRegistering ? (
+          <form onSubmit={loginFormik.handleSubmit} className="space-y-4">
+            <div>
+              <label htmlFor="loginEmail" className="block text-sm font-medium text-gray-700">
+                Correo electrónico
+              </label>
+              <input
+                type="email"
+                id="loginEmail"
+                name="loginEmail"
+                {...loginFormik.getFieldProps("loginEmail")}
+                className="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg"
+              />
+            </div>
+            <div>
+              <label htmlFor="loginPassword" className="block text-sm font-medium text-gray-700">
+                Contraseña
+              </label>
+              <input
+                type="password"
+                id="loginPassword"
+                name="loginPassword"
+                {...loginFormik.getFieldProps("loginPassword")}
+                className="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg"
+              />
+            </div>
+            <button
+              type="submit"
+              className="w-full py-2 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
             >
-              Correo electrónico
-            </label>
-            <input
-              type="email"
-              id="loginEmail"
-              name="loginEmail"
-              {...formik.getFieldProps("loginEmail")}
-              className="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="correo@ejemplo.com"
-              required
-            />
-          </div>
-          <div>
-            <label
-              htmlFor="password"
-              className="block text-sm font-medium text-gray-700"
+              Iniciar sesión
+            </button>
+          </form>
+        ) : (
+          <form onSubmit={registerFormik.handleSubmit} className="space-y-4">
+            <div>
+              <label htmlFor="registerName" className="block text-sm font-medium text-gray-700">
+                Nombre completo
+              </label>
+              <input
+                type="text"
+                id="registerName"
+                name="registerName"
+                {...registerFormik.getFieldProps("registerName")}
+                className="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg"
+              />
+            </div>
+            <div>
+              <label htmlFor="registerEmail" className="block text-sm font-medium text-gray-700">
+                Correo electrónico
+              </label>
+              <input
+                type="email"
+                id="registerEmail"
+                name="registerEmail"
+                {...registerFormik.getFieldProps("registerEmail")}
+                className="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg"
+              />
+            </div>
+            <div>
+              <label htmlFor="registerPassword" className="block text-sm font-medium text-gray-700">
+                Contraseña
+              </label>
+              <input
+                type="password"
+                id="registerPassword"
+                name="registerPassword"
+                {...registerFormik.getFieldProps("registerPassword")}
+                className="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg"
+              />
+            </div>
+            <button
+              type="submit"
+              className="w-full py-2 px-4 bg-green-600 text-white rounded-lg hover:bg-green-700"
             >
-              Contraseña
-            </label>
-            <input
-              type="password"
-              id="loginPassword"
-              name="loginPassword"
-              {...formik.getFieldProps("loginPassword")}
-              className="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="••••••••"
-              required
-            />
-          </div>
-          <button
-            type="submit"
-            className="w-full py-2 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
-          >
-            Iniciar sesión
-          </button>
-        </form>
+              Registrarse
+            </button>
+          </form>
+        )}
+
         <p className="text-sm text-center text-gray-500">
-          ¿No tienes cuenta?{" "}
-          <a href="#" className="text-blue-600 hover:underline">
-            Regístrate
-          </a>
+          {isRegistering ? "¿Ya tienes una cuenta?" : "¿No tienes cuenta?"}{" "}
+          <button
+            onClick={() => setIsRegistering(!isRegistering)}
+            className="text-blue-600 hover:underline font-medium"
+          >
+            {isRegistering ? "Inicia sesión" : "Regístrate"}
+          </button>
         </p>
       </div>
     </div>

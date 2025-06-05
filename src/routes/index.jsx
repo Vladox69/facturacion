@@ -7,6 +7,7 @@ import LocationPage from "../pages/user/Location";
 import StaffPage from "../pages/user/Staff";
 import ProductPage from "../pages/user/Product";
 import GenerateInvoice from "../pages/user/GenerateInvoice";
+import ProtectedRoute from "../components/ProtectedRoute";
 
 const routes = [
   {
@@ -15,7 +16,11 @@ const routes = [
   },
   {
     path: "/admin",
-    element: <DashboardLayout />,
+    element: (
+      <ProtectedRoute role="ADMIN">
+        <DashboardLayout />
+      </ProtectedRoute>
+    ),
     children: [
       {
         path: "users",
@@ -29,7 +34,11 @@ const routes = [
   },
   {
     path: "/user",
-    element: <DashboardLayout />,
+    element: (
+      <ProtectedRoute role="USER">
+        <DashboardLayout />
+      </ProtectedRoute>
+    ),
     children: [
       {
         path: "location",
@@ -44,9 +53,9 @@ const routes = [
         element: <ProductPage />,
       },
       {
-        path:"invoices",
-        element:<GenerateInvoice />
-      }
+        path: "invoices",
+        element: <GenerateInvoice />,
+      },
     ],
   },
   {

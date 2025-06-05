@@ -6,4 +6,12 @@ const invoiceApi=axios.create({
     baseURL: VITE_API_URL
 });
 
+invoiceApi.interceptors.request.use(config=>{
+    config.headers = {
+        ...config.headers,
+        'X-Token':localStorage.getItem('token')
+    };
+    return config;
+});
+
 export default invoiceApi;
