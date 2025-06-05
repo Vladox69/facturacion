@@ -9,10 +9,16 @@ export const useAuthStore = () => {
   const startLogin = async ({ email, password }) => {
     dispatch(onChecking());
     try {
+      /*
       const { data } = await invoiceApi.post("/auth", { email, password });
       localStorage.setItem("token", data.token);
       localStorage.setItem("token-init-date", new Date().getTime());
       dispatch(onLogin({ name: data.name, uid: data.uid,role:data.role }));
+      */
+      localStorage.setItem("token", "token");
+      localStorage.setItem("token-init-date", new Date().getTime());
+      dispatch(onLogin({ name:" data.name", uid: "data.uid",role:"USER" }));
+
     } catch (error) {
       console.log(error);
       dispatch(onLogout("Credenciales incorrectas"));
@@ -49,10 +55,15 @@ export const useAuthStore = () => {
       return ;
     }
     try {
+      /*
       const {data} = await invoiceApi.get("/auth/renew");
       localStorage.setItem("token", data.token);
       localStorage.setItem("token-init-date", new Date().getTime());
       dispatch(onLogin({ name: data.name, uid: data.uid }));
+      */
+      localStorage.setItem("token", "token");
+      localStorage.setItem("token-init-date", new Date().getTime());
+      dispatch(onLogin({ name:" data.name", uid: "data.uid",role:"USER" }));
     } catch (error) {
       console.log(error);
       localStorage.clear();

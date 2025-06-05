@@ -3,11 +3,12 @@ import * as Yup from "yup";
 import { useAuthStore } from "../hooks";
 import { useEffect, useState } from "react";
 import { showError } from "../helpers/swal";
+import { Navigate } from "react-router-dom";
 
 export default function Login() {
-  const [isRegistering, setIsRegistering] = useState(false);
 
-  const { startLogin, startRegister, errorMessage } = useAuthStore();
+  const { startLogin, startRegister, errorMessage, status, user, checkAuthToken } = useAuthStore();
+  const [isRegistering, setIsRegistering] = useState(false);
 
   // Formik para login
   const loginFormik = useFormik({
@@ -36,8 +37,8 @@ export default function Login() {
       registerEmail: Yup.string().email("Correo inválido").required("Correo requerido"),
       registerPassword: Yup.string().min(6, "Mínimo 6 caracteres").required("Contraseña requerida"),
     }),
-    onSubmit: ({registerEmail:email,registerName:name,registerPassword:password }) => {
-      startRegister({ email, password, name})
+    onSubmit: ({ registerEmail: email, registerName: name, registerPassword: password }) => {
+      startRegister({ email, password, name })
     },
   });
 
@@ -46,6 +47,20 @@ export default function Login() {
       showError(errorMessage);
     }
   }, [errorMessage]);
+
+  useEffect(() => {
+    checkAuthToken();
+  }, []);
+
+  if (status === 'checking') {
+    return <p className="text-center text-gray-600">Verificando sesión...</p>;
+  }
+
+  if (status === 'authenticated') {
+    // Redirige al dashboard según el rol
+    const target = user.role === 'ADMIN' ? '/admin' : '/user';
+    return <Navigate to={target} />;
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
