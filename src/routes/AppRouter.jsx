@@ -1,5 +1,3 @@
-import { useEffect } from "react";
-import { useAuthStore } from "../hooks";
 import { Route, Routes, Navigate } from "react-router-dom";
 
 import Login from "../pages/Login";

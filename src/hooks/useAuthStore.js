@@ -9,15 +9,10 @@ export const useAuthStore = () => {
   const startLogin = async ({ email, password }) => {
     dispatch(onChecking());
     try {
-      /*
       const { data } = await invoiceApi.post("/auth", { email, password });
       localStorage.setItem("token", data.token);
       localStorage.setItem("token-init-date", new Date().getTime());
       dispatch(onLogin({ name: data.name, uid: data.uid,role:data.role }));
-      */
-      localStorage.setItem("token", "token");
-      localStorage.setItem("token-init-date", new Date().getTime());
-      dispatch(onLogin({ name:" data.name", uid: "data.uid",role:"USER" }));
 
     } catch (error) {
       console.log(error);
@@ -55,21 +50,22 @@ export const useAuthStore = () => {
       return ;
     }
     try {
-      /*
+      
       const {data} = await invoiceApi.get("/auth/renew");
       localStorage.setItem("token", data.token);
       localStorage.setItem("token-init-date", new Date().getTime());
-      dispatch(onLogin({ name: data.name, uid: data.uid }));
-      */
-      localStorage.setItem("token", "token");
-      localStorage.setItem("token-init-date", new Date().getTime());
-      dispatch(onLogin({ name:" data.name", uid: "data.uid",role:"USER" }));
+      dispatch(onLogin({ name: data.name, uid: data.uid, role: data.role }));
     } catch (error) {
       console.log(error);
       localStorage.clear();
       dispatch(onLogout());
     }
   };
+
+  const startLogout=()=>{
+    localStorage.clear();
+    dispatch(onLogout());
+  }
 
   return {
     //* Propiedades
@@ -79,6 +75,7 @@ export const useAuthStore = () => {
     //*Métodos
     startLogin,
     startRegister,
-    checkAuthToken
+    checkAuthToken,
+    startLogout
   };
 };

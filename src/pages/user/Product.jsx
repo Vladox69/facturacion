@@ -1,28 +1,20 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Plus } from "lucide-react";
 import ProductForm from "../../components/products/ProductForm";
 import ProductTable from "../../components/products/ProductTable";
+import { useAuthStore, useProductStore } from "../../hooks";
 
 export default function ProductPage() {
-  const [products, setProducts] = useState([
-    {
-      _id: "1",
-      name: "Coca Cola 500ml",
-      pvp: 1.5,
-      iva: "12%",
-      ice: "0%",
-      business: "Negocio A",
-    },
-  ]);
+  const { products, startLoadingProducts } = useProductStore();
+  const { user } = useAuthStore();
 
   const [editing, setEditing] = useState(null);
   const [showForm, setShowForm] = useState(false);
 
   const saveProduct = (product) => {
     if (product._id) {
-      setProducts((prev) => prev.map((p) => (p._id === product._id ? product : p)));
-    } else {
-      setProducts((prev) => [...prev, { ...product, _id: crypto.randomUUID() }]);
+      console.log(product);
+      
     }
     setShowForm(false);
     setEditing(null);
@@ -30,9 +22,13 @@ export default function ProductPage() {
 
   const deleteProduct = (id) => {
     if (confirm("¿Eliminar producto?")) {
-      setProducts((prev) => prev.filter((p) => p._id !== id));
+      console.log(id);
+      
     }
   };
+  useEffect(() => {
+    startLoadingProducts({_id:user.uid});
+  }, []);
 
   return (
     <div className="p-6 space-y-6">
@@ -52,7 +48,9 @@ export default function ProductPage() {
       {showForm && (
         <div className="bg-white p-6 rounded-md">
           <h2 className="text-xl font-semibold">Registrar Producto</h2>
-          <p className="text-gray-500 mb-4">Completa los campos para registrar un nuevo producto.</p>
+          <p className="text-gray-500 mb-4">
+            Completa los campos para registrar un nuevo producto.
+          </p>
           <ProductForm
             onSave={saveProduct}
             editingProduct={editing}

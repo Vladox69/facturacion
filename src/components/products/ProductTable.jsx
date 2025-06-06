@@ -24,10 +24,16 @@ export default function ProductTable({ products, onEdit, onDelete }) {
               <td className="p-3">{p.business}</td>
               <td className="p-3 text-center">
                 <div className="flex justify-center gap-3">
-                  <button onClick={() => onEdit(p)} className="text-blue-600 hover:text-blue-800">
+                  <button
+                    onClick={() => onEdit(p)}
+                    className="text-blue-600 hover:text-blue-800"
+                  >
                     <Edit size={18} />
                   </button>
-                  <button onClick={() => onDelete(p._id)} className="text-red-600 hover:text-red-800">
+                  <button
+                    onClick={() => onDelete(p._id)}
+                    className="text-red-600 hover:text-red-800"
+                  >
                     <Trash2 size={18} />
                   </button>
                 </div>
