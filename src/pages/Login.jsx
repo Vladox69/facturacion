@@ -1,6 +1,6 @@
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import { useAuthStore } from "../hooks";
+import { useAuthStore, useBusinessStore } from "../hooks";
 import { useEffect, useState } from "react";
 import { showError } from "../helpers/swal";
 import { Navigate } from "react-router-dom";
@@ -8,6 +8,7 @@ import { Navigate } from "react-router-dom";
 export default function Login() {
 
   const { startLogin, startRegister, errorMessage, status, user, checkAuthToken } = useAuthStore();
+  const { startLoadingBusiness } = useBusinessStore();
   const [isRegistering, setIsRegistering] = useState(false);
 
   // Formik para login
@@ -47,6 +48,13 @@ export default function Login() {
       showError(errorMessage);
     }
   }, [errorMessage]);
+
+  useEffect(() => {
+    if(status==="authenticated"&&user?.uid){
+      startLoadingBusiness({_id:user.uid});
+    }
+  }, [status, user])
+  
 
   useEffect(() => {
     checkAuthToken();

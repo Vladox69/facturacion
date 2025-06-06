@@ -12,7 +12,6 @@ export const useProductStore = () => {
     dispatch(onLoadingProduct());
     try {
         const {data} = await invoiceApi.get(`/product/business/${_id}`);
-        console.log(data);
         dispatch(onLoadProducts(data.products));
     } catch (error) {
         console.log(error);
