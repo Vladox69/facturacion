@@ -10,7 +10,6 @@ export default function ProductTable({ products, onEdit, onDelete }) {
             <th className="p-3 text-left">PVP</th>
             <th className="p-3 text-left">IVA</th>
             <th className="p-3 text-left">ICE</th>
-            <th className="p-3 text-left">Negocio</th>
             <th className="p-3 text-center">Acciones</th>
           </tr>
         </thead>
@@ -19,9 +18,8 @@ export default function ProductTable({ products, onEdit, onDelete }) {
             <tr key={p._id}>
               <td className="p-3">{p.name}</td>
               <td className="p-3">${p.pvp.toFixed(2)}</td>
-              <td className="p-3">{p.iva}</td>
-              <td className="p-3">{p.ice}</td>
-              <td className="p-3">{p.business}</td>
+              <td className="p-3">{p.iva.description}</td>
+              <td className="p-3">{p.ice.description}</td>
               <td className="p-3 text-center">
                 <div className="flex justify-center gap-3">
                   <button

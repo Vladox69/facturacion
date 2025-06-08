@@ -1,12 +1,13 @@
 import { Navigate, Outlet } from 'react-router-dom';
-import { useAuthStore } from '../hooks';
+import { useAuthStore, useBusinessStore } from '../hooks';
 import { useEffect } from 'react';
 
 const ProtectedRoute = ({ role, redirectTo = "/login" }) => {
   const { status, user, checkAuthToken } = useAuthStore();
-
+  const { startLoadingBusinessFromLocalStorage } = useBusinessStore();
   useEffect(() => {
     checkAuthToken();
+    startLoadingBusinessFromLocalStorage();
   }, []);
 
   if (status === 'checking') {
@@ -21,7 +22,7 @@ const ProtectedRoute = ({ role, redirectTo = "/login" }) => {
     return <Navigate to={`/${user.role.toLowerCase()}`} />;
   }
 
-  return <Outlet />; // 👈 esto es clave
+  return <Outlet />;
 };
 
 export default ProtectedRoute;

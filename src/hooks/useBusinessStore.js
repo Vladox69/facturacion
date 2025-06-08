@@ -1,6 +1,6 @@
 import { useDispatch, useSelector } from "react-redux";
 import invoiceApi from "../api/invoiceApi";
-import { onErrorBusiness, onLoadingBusiness, setBusinessData } from "../store";
+import { loadBusinessFromStorage, onErrorBusiness, onLoadingBusiness, setBusinessData } from "../store";
 
 export const useBusinessStore = () => {
   const { isLoadedBusiness, business, errorMessageBusiness } = useSelector(
@@ -21,6 +21,14 @@ export const useBusinessStore = () => {
     }
   };
 
+  const startLoadingBusinessFromLocalStorage = () => {
+    dispatch(onLoadingBusiness());
+    dispatch(loadBusinessFromStorage());
+    if(!business){
+      dispatch(onErrorBusiness('No se pudo cargar los datos del negocio'));
+    }
+  };
+
   return {
     //* Propiedades
     isLoadedBusiness,
@@ -28,5 +36,6 @@ export const useBusinessStore = () => {
     errorMessageBusiness,
     //* Métodos
     startLoadingBusiness,
+    startLoadingBusinessFromLocalStorage
   };
 };

@@ -2,19 +2,17 @@ import { useEffect, useState } from "react";
 import { Plus } from "lucide-react";
 import ProductForm from "../../components/products/ProductForm";
 import ProductTable from "../../components/products/ProductTable";
-import { useAuthStore, useProductStore } from "../../hooks";
+import { useBusinessStore, useProductStore } from "../../hooks";
 
 export default function ProductPage() {
   const { products, startLoadingProducts } = useProductStore();
-  const { user } = useAuthStore();
-
+  const { business } = useBusinessStore();
   const [editing, setEditing] = useState(null);
   const [showForm, setShowForm] = useState(false);
 
   const saveProduct = (product) => {
     if (product._id) {
       console.log(product);
-      
     }
     setShowForm(false);
     setEditing(null);
@@ -23,11 +21,12 @@ export default function ProductPage() {
   const deleteProduct = (id) => {
     if (confirm("¿Eliminar producto?")) {
       console.log(id);
-      
     }
   };
+
+
   useEffect(() => {
-    startLoadingProducts({_id:user.uid});
+    startLoadingProducts({ _id: business._id });
   }, []);
 
   return (
