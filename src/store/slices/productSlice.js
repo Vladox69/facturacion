@@ -4,6 +4,7 @@ export const productSlice = createSlice({
   initialState: {
     isLoading: false,
     products: [],
+    filteredProducts: [],
     product: {},
     errorMessage: undefined,
   },
@@ -26,6 +27,16 @@ export const productSlice = createSlice({
         }
       });
     },
+    setFilteredProducts:(state,{payload=[]})=>{
+      state.isLoading = false;
+      state.filteredProducts = payload;
+      state.errorMessage = undefined;
+    },
+    clearFilteredProducts:(state)=>{
+      state.isLoading = false;
+      state.filteredProducts = [];
+      state.errorMessage = undefined;
+    },
     onErrorProduct: (state, { payload }) => {
       state.isLoading = false;
       state.errorMessage = payload;
@@ -34,7 +45,6 @@ export const productSlice = createSlice({
     onErrorProducts: (state, { payload }) => {
       state.isLoading = false;
       state.errorMessage = payload;
-      state.product = {};
     },
   },
 });
@@ -44,4 +54,6 @@ export const {
   onLoadProducts,
   onErrorProduct,
   onErrorProducts,
+  setFilteredProducts,
+  clearFilteredProducts
 } = productSlice.actions;
