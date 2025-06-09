@@ -2,8 +2,11 @@ import { Trash2 } from "lucide-react";
 import { Formik, Form, Field, FieldArray, ErrorMessage } from "formik";
 import ProductSearchSelect from "../../components/products/ProductSearchSelect";
 import * as Yup from "yup";
+import { useEffect } from "react";
+import { useCustomerType } from "../../hooks";
 
 const invoiceSchema = Yup.object().shape({
+  customerType: Yup.string(),
   customer: Yup.object().shape({
     fullName: Yup.string().required("Nombre es requerido"),
     identification: Yup.string().required("Cédula/RUC es requerido"),
@@ -34,6 +37,7 @@ const invoiceSchema = Yup.object().shape({
 
 export default function GenerateInvoice() {
   const initialValues = {
+    customerType: "",
     customer: {
       fullName: "",
       identification: "",
@@ -46,6 +50,12 @@ export default function GenerateInvoice() {
     paymentDetails: [],
     saleDetails: [],
   };
+
+  const { customerTypes, startLoadingCustomerTypes } = useCustomerType();
+
+  useEffect(() => {
+    startLoadingCustomerTypes();
+  }, []);
 
   return (
     <div className="bg-white text-gray-900 p-6 space-y-6 min-h-screen">
@@ -65,12 +75,50 @@ export default function GenerateInvoice() {
             <div className="grid grid-cols-12 gap-6">
               <div className="col-span-12 md:col-span-8 space-y-4">
                 <div className="flex items-center gap-2">
-                  <label className="text-sm min-w-[100px]">CI/RUC:</label>
-                  <Field
-                    name="customer.identification"
-                    className="flex-1 border border-gray-300 rounded px-3 py-2"
-                  />
+                  <div className="flex items-center gap-2 mt-2">
+                    <label className="text-sm min-w-[100px]">CI/RUC:</label>
+                    <Field name="customer.identification">
+                      {({ field, form }) => {
+                        const type = form.values.customer.type;
+
+                        // Determinar maxLength dinámicamente
+                        let maxLength = 13;
+                        if (type === "CEDULA") maxLength = 10;
+                        else if (type === "PASAPORTE") maxLength = 9;
+                        else if (
+                          type === "RUC" ||
+                          type === "VENTA A CONSUMIDOR FINAL" ||
+                          type === "IDENTIFICACION DEL EXTERIOR"
+                        ) {
+                          maxLength = 13;
+                        }
+
+                        return (
+                          <input
+                            {...field}
+                            className="flex-1 border border-gray-300 min-w-[325px] rounded px-3 py-2"
+                            maxLength={maxLength}
+                            placeholder={`Máximo ${maxLength} caracteres`}
+                          />
+                        );
+                      }}
+                    </Field>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <label className="text-sm min-w-[50px]">Tipo:</label>
+                    <Field
+                      as="select"
+                      name="customer.type"
+                      className="border border-gray-300 rounded px-3 py-2"
+                    >
+                      <option value="">Seleccione</option>
+                      {customerTypes.map((customerType) => (
+                        <option value={customerType.description}>{customerType.description}</option>
+                      ))}
+                    </Field>
+                  </div>
                 </div>
+
                 <div className="flex items-center gap-2">
                   <label className="text-sm min-w-[100px]">Nombres:</label>
                   <Field
@@ -214,26 +262,30 @@ export default function GenerateInvoice() {
               </div>
 
               {/* Productos */}
-              <div className="col-span-12 md:col-span-9 space-y-4">
-                <ProductSearchSelect
-                  onSelect={(product) => {
-                    const existing = values.saleDetails.find(
-                      (p) => p.product === product._id
-                    );
-                    if (!existing) {
-                      setFieldValue("saleDetails", [
-                        ...values.saleDetails,
-                        {
-                          product: product._id,
-                          quantity: 1,
-                          unitValue: product.pvp,
-                        },
-                      ]);
-                    }
-                  }}
-                />
+              <div className="col-span-12 md:col-span-9 space-y-4 relative">
+                {/* Product selector con z-index superior */}
+                <div className="relative z-20">
+                  <ProductSearchSelect
+                    onSelect={(product) => {
+                      const existing = values.saleDetails.find(
+                        (p) => p.product === product.name
+                      );
+                      if (!existing) {
+                        setFieldValue("saleDetails", [
+                          ...values.saleDetails,
+                          {
+                            product: product.name,
+                            quantity: 1,
+                            unitValue: product.pvp,
+                          },
+                        ]);
+                      }
+                    }}
+                  />
+                </div>
 
-                <div className="overflow-x-auto border border-gray-300 rounded-md h-[250px] overflow-y-auto">
+                {/* Tabla de productos con z-10 */}
+                <div className="relative z-10 overflow-x-auto border border-gray-300 rounded-md h-[250px] overflow-y-auto">
                   <table className="w-full text-sm">
                     <thead className="text-gray-600 border-b border-gray-300 bg-gray-50 sticky top-0 z-10">
                       <tr>
