@@ -1,5 +1,5 @@
-import { Trash2 } from "lucide-react";
-import { Formik, Form, Field, FieldArray, ErrorMessage } from "formik";
+import { Trash2, Search } from "lucide-react";
+import { Formik, Form, Field, FieldArray } from "formik";
 import ProductSearchSelect from "../../components/products/ProductSearchSelect";
 import * as Yup from "yup";
 import { useEffect } from "react";
@@ -92,18 +92,26 @@ export default function GenerateInvoice() {
                         ) {
                           maxLength = 13;
                         }
-
                         return (
-                          <input
-                            {...field}
-                            className="flex-1 border border-gray-300 min-w-[325px] rounded px-3 py-2"
-                            maxLength={maxLength}
-                            placeholder={`Máximo ${maxLength} caracteres`}
-                          />
+                          <div className="relative flex-1 min-w-[325px]">
+                            <input
+                              {...field}
+                              className="w-full border border-gray-300 rounded px-3 py-2 pr-10"
+                              maxLength={maxLength}
+                              placeholder={`Máximo ${maxLength} caracteres`}
+                            />
+                            <button
+                              type="button"
+                              className="absolute inset-y-0 right-2 flex items-center text-gray-500 hover:text-blue-600"
+                            >
+                              <Search size={18} />
+                            </button>
+                          </div>
                         );
                       }}
                     </Field>
                   </div>
+
                   <div className="flex items-center gap-2">
                     <label className="text-sm min-w-[50px]">Tipo:</label>
                     <Field
@@ -113,7 +121,9 @@ export default function GenerateInvoice() {
                     >
                       <option value="">Seleccione</option>
                       {customerTypes.map((customerType) => (
-                        <option value={customerType.description}>{customerType.description}</option>
+                        <option value={customerType.description}>
+                          {customerType.description}
+                        </option>
                       ))}
                     </Field>
                   </div>
@@ -293,7 +303,6 @@ export default function GenerateInvoice() {
                         <th className="px-3 text-left">Producto</th>
                         <th className="px-3 text-right">Cantidad</th>
                         <th className="px-3 text-right">Precio</th>
-                        <th className="px-3 text-right">P. Esp.</th>
                         <th className="px-3 text-right">Desc. %</th>
                         <th className="px-3 text-right">Subtotal</th>
                         <th className="px-3"></th>
@@ -314,16 +323,60 @@ export default function GenerateInvoice() {
                           <tr key={index}>
                             <td className="py-1 px-3">{index + 1}</td>
                             <td className="px-3">{item.product}</td>
-                            <td className="px-3 text-right">{item.quantity}</td>
+                            <td className="px-3 text-right">
+                              <input
+                                type="number"
+                                min={1}
+                                value={item.quantity}
+                                onChange={(e) =>
+                                  setFieldValue(
+                                    `saleDetails[${index}].quantity`,
+                                    Number(e.target.value)
+                                  )
+                                }
+                                className="w-16 text-right border border-gray-300 rounded px-1"
+                              />
+                            </td>
                             <td className="px-3 text-right">
                               ${item.unitValue.toFixed(2)}
                             </td>
-                            <td className="px-3 text-right">-</td>
-                            <td className="px-3 text-right">-</td>
                             <td className="px-3 text-right">
-                              ${(item.quantity * item.unitValue).toFixed(2)}
+                              <input
+                                type="number"
+                                min={0}
+                                max={100}
+                                value={item.discount || 0}
+                                onChange={(e) =>
+                                  setFieldValue(
+                                    `saleDetails[${index}].discount`,
+                                    Number(e.target.value)
+                                  )
+                                }
+                                className="w-14 text-right border border-gray-300 rounded px-1"
+                              />
                             </td>
-                            <td className="px-3"></td>
+                            <td className="px-3 text-right">
+                              $
+                              {(
+                                item.quantity *
+                                item.unitValue *
+                                (1 - (item.discount || 0) / 100)
+                              ).toFixed(2)}
+                            </td>
+                            <td className="px-3 text-center">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const updated = [...values.saleDetails];
+                                  updated.splice(index, 1);
+                                  setFieldValue("saleDetails", updated);
+                                }}
+                                className="text-red-600 hover:text-red-800"
+                                title="Eliminar producto"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </td>
                           </tr>
                         ))
                       )}
