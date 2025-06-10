@@ -3,7 +3,7 @@ import { Formik, Form, Field, FieldArray } from "formik";
 import ProductSearchSelect from "../../components/products/ProductSearchSelect";
 import * as Yup from "yup";
 import { useEffect } from "react";
-import { useCustomerType } from "../../hooks";
+import { useCustomer, useCustomerType } from "../../hooks";
 
 const invoiceSchema = Yup.object().shape({
   customerType: Yup.string(),
@@ -52,6 +52,36 @@ export default function GenerateInvoice() {
   };
 
   const { customerTypes, startLoadingCustomerTypes } = useCustomerType();
+  const { customer, searchingCustomer } = useCustomer();
+
+  const onClickSearch = (values, setFieldValue) => {
+    searchingCustomer({ query: values.customer.identification })
+    console.log(customer);
+    
+    setFieldValue("customer", {
+      fullName: customer.fullName,
+      identification: customer.identification,
+      email: customer.email,
+      phone: customer.phone,
+      address: customer.address,
+    });
+  }
+
+  const onChangeCustomerType = (customerType, setFieldValue) => {
+    console.log(customerType);
+    setFieldValue("customer", {
+      fullName: "",
+      identification: "",
+      email: "",
+      phone: "",
+      address: "",
+    });
+    setFieldValue("customerType", customerType);
+  }
+
+  const onSaveInvoice = (values) => {
+    console.log(values);
+  }
 
   useEffect(() => {
     startLoadingCustomerTypes();
@@ -79,7 +109,7 @@ export default function GenerateInvoice() {
                     <label className="text-sm min-w-[100px]">CI/RUC:</label>
                     <Field name="customer.identification">
                       {({ field, form }) => {
-                        const type = form.values.customer.type;
+                        const type = form.values.customerType;
 
                         // Determinar maxLength dinámicamente
                         let maxLength = 13;
@@ -103,6 +133,7 @@ export default function GenerateInvoice() {
                             <button
                               type="button"
                               className="absolute inset-y-0 right-2 flex items-center text-gray-500 hover:text-blue-600"
+                              onClick={() => onClickSearch(values, setFieldValue)}
                             >
                               <Search size={18} />
                             </button>
@@ -116,12 +147,15 @@ export default function GenerateInvoice() {
                     <label className="text-sm min-w-[50px]">Tipo:</label>
                     <Field
                       as="select"
-                      name="customer.type"
+                      name="customerType"
                       className="border border-gray-300 rounded px-3 py-2"
+                      onChange={(e) => { onChangeCustomerType(e.target.value, setFieldValue) }}
                     >
                       <option value="">Seleccione</option>
                       {customerTypes.map((customerType) => (
-                        <option value={customerType.description}>
+                        <option
+                          value={customerType.description}
+                        >
                           {customerType.description}
                         </option>
                       ))}
@@ -414,6 +448,7 @@ export default function GenerateInvoice() {
               <button
                 type="submit"
                 className="bg-gray-900 text-white px-4 py-2 rounded hover:bg-gray-800"
+                onClick={() => onSaveInvoice(values)}
               >
                 Guardar
               </button>
