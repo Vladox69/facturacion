@@ -4,15 +4,22 @@ import ProductSearchSelect from "../../components/products/ProductSearchSelect";
 import * as Yup from "yup";
 import { useEffect } from "react";
 import { useCustomer, useCustomerType } from "../../hooks";
+import { showInfo } from "../../helpers/swal";
 
 const invoiceSchema = Yup.object().shape({
   customerType: Yup.string(),
   customer: Yup.object().shape({
+    id: Yup.string(),
     fullName: Yup.string().required("Nombre es requerido"),
     identification: Yup.string().required("Cédula/RUC es requerido"),
     email: Yup.string().email("Correo inválido").required("Correo requerido"),
     phone: Yup.string().required("Teléfono requerido"),
     address: Yup.string().required("Dirección requerida"),
+    identificationType: Yup.object().shape({
+      _id: Yup.string(),
+      description: Yup.string(),
+      code: Yup.string(),
+    }),
   }),
   issueDate: Yup.string().required("Fecha de emisión requerida"),
   guideNumber: Yup.string(),
@@ -39,11 +46,17 @@ export default function GenerateInvoice() {
   const initialValues = {
     customerType: "",
     customer: {
+      _id: "",
       fullName: "",
       identification: "",
       email: "",
       phone: "",
       address: "",
+      identificationType: {
+        _id: "",
+        description: "",
+        code: "",
+      },
     },
     issueDate: new Date().toISOString().split("T")[0],
     guideNumber: "",
@@ -52,36 +65,51 @@ export default function GenerateInvoice() {
   };
 
   const { customerTypes, startLoadingCustomerTypes } = useCustomerType();
-  const { customer, searchingCustomer } = useCustomer();
+  const { errorMessageCustomer, searchingCustomer } = useCustomer();
 
-  const onClickSearch = (values, setFieldValue) => {
-    searchingCustomer({ query: values.customer.identification })
-    console.log(customer);
-    
-    setFieldValue("customer", {
-      fullName: customer.fullName,
-      identification: customer.identification,
-      email: customer.email,
-      phone: customer.phone,
-      address: customer.address,
+  const onClickSearch = async (values, setFieldValue) => {
+    const resp = await searchingCustomer({
+      query: values.customer.identification,
     });
-  }
-
-  const onChangeCustomerType = (customerType, setFieldValue) => {
-    console.log(customerType);
-    setFieldValue("customer", {
-      fullName: "",
-      identification: "",
-      email: "",
-      phone: "",
-      address: "",
-    });
-    setFieldValue("customerType", customerType);
-  }
+    if (resp) {
+      setFieldValue("customer", {
+        _id: resp._id,
+        fullName: resp.fullName,
+        identification: resp.identification,
+        email: resp.email,
+        phone: resp.phone,
+        address: resp.address,
+        identificationType: resp.identificationType,
+      });
+      console.log(resp.identificationType);
+      
+    } else {
+      const length = values.customer.identification.length;
+      const identificationType = customerTypes.find(
+        (ct) => ct.length == length
+      );
+      console.log(identificationType);
+      
+      setFieldValue("customer", {
+        fullName: "",
+        identification: values.customer.identification,
+        email: "",
+        phone: "",
+        address: "",
+        identificationType,
+      });
+    }
+  };
 
   const onSaveInvoice = (values) => {
     console.log(values);
-  }
+  };
+
+  useEffect(() => {
+    if (errorMessageCustomer) {
+      showInfo(errorMessageCustomer);
+    }
+  }, [errorMessageCustomer]);
 
   useEffect(() => {
     startLoadingCustomerTypes();
@@ -105,62 +133,29 @@ export default function GenerateInvoice() {
             <div className="grid grid-cols-12 gap-6">
               <div className="col-span-12 md:col-span-8 space-y-4">
                 <div className="flex items-center gap-2">
-                  <div className="flex items-center gap-2 mt-2">
-                    <label className="text-sm min-w-[100px]">CI/RUC:</label>
-                    <Field name="customer.identification">
-                      {({ field, form }) => {
-                        const type = form.values.customerType;
-
-                        // Determinar maxLength dinámicamente
-                        let maxLength = 13;
-                        if (type === "CEDULA") maxLength = 10;
-                        else if (type === "PASAPORTE") maxLength = 9;
-                        else if (
-                          type === "RUC" ||
-                          type === "VENTA A CONSUMIDOR FINAL" ||
-                          type === "IDENTIFICACION DEL EXTERIOR"
-                        ) {
-                          maxLength = 13;
-                        }
-                        return (
-                          <div className="relative flex-1 min-w-[325px]">
-                            <input
-                              {...field}
-                              className="w-full border border-gray-300 rounded px-3 py-2 pr-10"
-                              maxLength={maxLength}
-                              placeholder={`Máximo ${maxLength} caracteres`}
-                            />
-                            <button
-                              type="button"
-                              className="absolute inset-y-0 right-2 flex items-center text-gray-500 hover:text-blue-600"
-                              onClick={() => onClickSearch(values, setFieldValue)}
-                            >
-                              <Search size={18} />
-                            </button>
-                          </div>
-                        );
-                      }}
-                    </Field>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <label className="text-sm min-w-[50px]">Tipo:</label>
-                    <Field
-                      as="select"
-                      name="customerType"
-                      className="border border-gray-300 rounded px-3 py-2"
-                      onChange={(e) => { onChangeCustomerType(e.target.value, setFieldValue) }}
-                    >
-                      <option value="">Seleccione</option>
-                      {customerTypes.map((customerType) => (
-                        <option
-                          value={customerType.description}
-                        >
-                          {customerType.description}
-                        </option>
-                      ))}
-                    </Field>
-                  </div>
+                  <label className="text-sm min-w-[100px]">CI/RUC:</label>
+                  <Field name="customer.identification">
+                    {({ field }) => {
+                      return (
+                        <div className="relative flex-1 min-w-[325px]">
+                          <input
+                            {...field}
+                            className="w-full border border-gray-300 rounded px-3 py-2 pr-10"
+                            minLength={9}
+                            maxLength={13}
+                            placeholder={`Máximo 13 caracteres`}
+                          />
+                          <button
+                            type="button"
+                            className="absolute inset-y-0 right-2 flex items-center text-gray-500 hover:text-blue-600"
+                            onClick={() => onClickSearch(values, setFieldValue)}
+                          >
+                            <Search size={18} />
+                          </button>
+                        </div>
+                      );
+                    }}
+                  </Field>
                 </div>
 
                 <div className="flex items-center gap-2">

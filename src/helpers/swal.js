@@ -27,6 +27,14 @@ export const showError = (message) => {
   });
 };
 
+export const showInfo = (message) => {
+  baseSwal.fire({
+    icon: 'info',
+    title: message,
+    confirmButtonText: 'Entendido',
+  });
+};
+
 export const showConfirm = async (message) => {
   const result = await baseSwal.fire({
     title: message,

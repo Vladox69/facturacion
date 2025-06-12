@@ -34,6 +34,9 @@ export const customerSlice = createSlice({
       state.isLoadingCustomer = false;
       state.errorMessageCustomer = payload;
     },
+    clearErrorMessageCustomer: (state) => {
+      state.errorMessageCustomer = undefined;
+    },
   },
 });
 // Action creators are generated for each case reducer function
@@ -42,4 +45,5 @@ export const {
   onLoadCustomer,
   onLoadCustomers,
   onLoadingCustomer,
+  clearErrorMessageCustomer,
 } = customerSlice.actions;
