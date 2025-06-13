@@ -8,7 +8,7 @@ import {
 } from "../store";
 import invoiceApi from "../api/invoiceApi";
 
-export const useCustomer = () => {
+export const useCustomerStore = () => {
   const { isLoadingCustomer, customers, customer, errorMessageCustomer } =
     useSelector((state) => state.customer);
 

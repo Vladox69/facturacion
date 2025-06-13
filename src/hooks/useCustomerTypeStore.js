@@ -2,7 +2,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { onErrorCustomerTypes, onLoadCustomerTypes, onLoadingCustomerTypes } from "../store";
 import invoiceApi from "../api/invoiceApi";
 
-export const useCustomerType = () => {
+export const useCustomerTypeStore = () => {
   const { isLoadingCustomerTypes, customerTypes, errorMessageCustomerType } =
     useSelector((state) => state.customerType);
 

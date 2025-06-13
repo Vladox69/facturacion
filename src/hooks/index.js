@@ -1,5 +1,5 @@
 export * from './useAuthStore'
 export * from './useProductStore'
 export * from './useBusinessStore'
-export * from './useCustomerType'
-export * from './useCustomer'
+export * from './useCustomerTypeStore'
+export * from './useCustomerStore'
