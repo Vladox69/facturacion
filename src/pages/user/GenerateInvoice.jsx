@@ -3,7 +3,12 @@ import { Formik, Form, Field, FieldArray } from "formik";
 import ProductSearchSelect from "../../components/products/ProductSearchSelect";
 import * as Yup from "yup";
 import { useEffect } from "react";
-import { useCustomerStore, useCustomerTypeStore, useProductStore } from "../../hooks";
+import {
+  useCustomerStore,
+  useCustomerTypeStore,
+  usePaymentMethodStore,
+  useProductStore,
+} from "../../hooks";
 import { showInfo } from "../../helpers/swal";
 import { calculateProductDetails } from "../../helpers";
 
@@ -21,11 +26,17 @@ const invoiceSchema = Yup.object().shape({
       code: Yup.string(),
     }),
   }),
+  payment: Yup.object().shape({
+    method: Yup.string(),
+    value: Yup.number(),
+  }),
   issueDate: Yup.string().required("Fecha de emisión requerida"),
   guideNumber: Yup.string(),
   paymentDetails: Yup.array()
     .of(
       Yup.object().shape({
+        id: Yup.string(),
+        code: Yup.string(),
         paymentMethod: Yup.string().required("Forma de pago requerida"),
         value: Yup.number().required("Monto requerido"),
       })
@@ -80,11 +91,17 @@ export default function GenerateInvoice() {
     subtotal: 0,
     ivaTotal: 0,
     total: 0,
+    payment: {
+      method: "",
+      value: 0,
+    },
   };
 
   const { customerTypes, startLoadingCustomerTypes } = useCustomerTypeStore();
   const { errorMessageCustomer, searchingCustomer } = useCustomerStore();
   const { products } = useProductStore();
+  const { paymentMethods, startLoadingPaymentMethods } =
+    usePaymentMethodStore();
 
   const onClickSearch = async (values, setFieldValue) => {
     const resp = await searchingCustomer({
@@ -159,9 +176,18 @@ export default function GenerateInvoice() {
   };
 
   const onAddPayment = (values, setFieldValue, payment, quantity) => {
-    console.log(payment,quantity);
-    setFieldValue("currentPaymentMethod", "");
-    setFieldValue("currentPaymentValue", "");
+    const paymentMethod = paymentMethods.find((pm) => pm._id == payment);
+    const newPaymentDetail = {
+      id: paymentMethod._id,
+      paymentMethod: paymentMethod.name,
+      code: paymentMethod.code,
+      value: quantity,
+    };
+    const updatedPaymentMethods = [...values.paymentDetails, newPaymentDetail];
+    setFieldValue("paymentDetails", updatedPaymentMethods);
+
+    setFieldValue("payment.method", "");
+    setFieldValue("payment.value", 0);
   };
 
   const onUpdatePayment = (values, setFieldValue, payment, newQuantity) => {};
@@ -184,6 +210,7 @@ export default function GenerateInvoice() {
 
   useEffect(() => {
     startLoadingCustomerTypes();
+    startLoadingPaymentMethods();
   }, []);
 
   return (
@@ -339,38 +366,41 @@ export default function GenerateInvoice() {
                       <div className="flex gap-2 mt-1">
                         <select
                           onChange={(e) =>
-                            setFieldValue(
-                              "currentPaymentMethod",
-                              e.target.value
-                            )
+                            setFieldValue("payment.method", e.target.value)
                           }
                           className="w-full border border-gray-300 rounded px-3 py-2"
+                          value={values.payment.method}
                         >
                           <option value="">Seleccione</option>
-                          <option value="efectivo">Efectivo</option>
-                          <option value="tarjeta">Tarjeta</option>
-                          <option value="transferencia">Transferencia</option>
+                          {paymentMethods.map((paymentMethod, index) => (
+                            <option value={paymentMethod._id} key={index}>
+                              {paymentMethod.name}
+                            </option>
+                          ))}
                         </select>
                         <input
                           type="number"
                           placeholder="$"
                           onChange={(e) =>
-                            setFieldValue("currentPaymentValue", e.target.value)
+                            setFieldValue("payment.value", e.target.value)
                           }
+                          value={values.payment.value}
+                          min={0}
                           className="w-32 border border-gray-300 rounded px-3 py-2"
                         />
                         <button
                           type="button"
                           onClick={() => {
-                            if (
-                              values.currentPaymentMethod &&
-                              values.currentPaymentValue
-                            ) {
+                            const exists = values.paymentDetails.find(
+                              (pd) => pd.id == values.payment.method
+                            );
+                            if (exists) return;
+                            if (values.payment.method && values.payment.value) {
                               onAddPayment(
                                 values,
                                 setFieldValue,
-                                values.currentPaymentMethod,
-                                values.currentPaymentValue
+                                values.payment.method,
+                                values.payment.value
                               );
                             }
                           }}
@@ -467,12 +497,11 @@ export default function GenerateInvoice() {
                   <div className="relative z-20">
                     <ProductSearchSelect
                       onSelect={(product) => {
-                        const existing = values.saleDetails.find(
+                        const exists = values.saleDetails.find(
                           (p) => p.product === product.name
                         );
-                        if (!existing) {
-                          onAddProdcut(values, setFieldValue, product, 1);
-                        }
+                        if (exists) return;
+                        onAddProdcut(values, setFieldValue, product, 1);
                       }}
                     />
                   </div>

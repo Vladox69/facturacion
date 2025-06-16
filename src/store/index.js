@@ -5,3 +5,4 @@ export * from './slices/businessSlice'
 export * from './slices/invoiceSlice'
 export * from './slices/customerTypeSlice'
 export * from './slices/customerSlice'
+export * from './slices/paymentMethodSlice';
