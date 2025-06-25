@@ -6,3 +6,7 @@ export * from './slices/invoiceSlice'
 export * from './slices/customerTypeSlice'
 export * from './slices/customerSlice'
 export * from './slices/paymentMethodSlice';
+export * from './slices/locationSlice';
+export * from './slices/SRISlice';
+export * from './slices/PDFSlice';
+export * from './slices/saleSlice';

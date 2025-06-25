@@ -2,17 +2,25 @@ import { Trash2, Search } from "lucide-react";
 import { Formik, Form, Field, FieldArray } from "formik";
 import ProductSearchSelect from "../../components/products/ProductSearchSelect";
 import * as Yup from "yup";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
+  useBusinessStore,
   useCustomerStore,
   useCustomerTypeStore,
+  useInvoiceStore,
+  useLocationStore,
   usePaymentMethodStore,
+  usePDFStore,
   useProductStore,
+  useSRIStore,
 } from "../../hooks";
-import { showInfo } from "../../helpers/swal";
+import { showError, showInfo, showLoading } from "../../helpers/swal";
 import { calculateProductDetails } from "../../helpers";
+import Swal from "sweetalert2";
+import { useNavigate } from "react-router-dom";
 
 const invoiceSchema = Yup.object().shape({
+  location: Yup.string().required("Localidad es requerida"),
   customer: Yup.object().shape({
     id: Yup.string(),
     fullName: Yup.string().required("Nombre es requerido"),
@@ -70,7 +78,7 @@ const invoiceSchema = Yup.object().shape({
 
 export default function GenerateInvoice() {
   const initialValues = {
-    customerType: "",
+    location: "",
     customer: {
       _id: "",
       fullName: "",
@@ -97,11 +105,24 @@ export default function GenerateInvoice() {
     },
   };
 
+  const navigate = useNavigate();
   const { customerTypes, startLoadingCustomerTypes } = useCustomerTypeStore();
-  const { errorMessageCustomer, searchingCustomer } = useCustomerStore();
+  const { errorMessageCustomer, isLoadingCustomer, searchingCustomer } =
+    useCustomerStore();
   const { products } = useProductStore();
   const { paymentMethods, startLoadingPaymentMethods } =
     usePaymentMethodStore();
+  const {
+    createInvoice,
+    updateMetadataInvoice,
+    generateXML,
+    startSettingInvoiceHTML,
+  } = useInvoiceStore();
+  const { locations, startLoadingLocations } = useLocationStore();
+  const { business } = useBusinessStore();
+  const { startReception, startAuthorization } = useSRIStore();
+  const { startLoadingPDF } = usePDFStore();
+  const [isLoadingProcess, setIsLoadingProcess] = useState(false);
 
   const onClickSearch = async (values, setFieldValue) => {
     const resp = await searchingCustomer({
@@ -131,6 +152,7 @@ export default function GenerateInvoice() {
         identificationType,
       });
     }
+    Swal.close();
   };
 
   const onAddProdcut = (values, setFieldValue, product, quantity) => {
@@ -190,7 +212,21 @@ export default function GenerateInvoice() {
     setFieldValue("payment.value", 0);
   };
 
-  const onUpdatePayment = (values, setFieldValue, payment, newQuantity) => {};
+  const onUpdatePayment = (values, setFieldValue, paymentId, newQuantity) => {
+    const paymentIndex = values.paymentDetails.findIndex(
+      (item) => item.id == paymentId
+    );
+
+    if (paymentIndex === -1) return;
+
+    const updatedPayments = [...values.paymentDetails];
+    updatedPayments[paymentIndex] = {
+      ...updatedPayments[paymentIndex],
+      value: newQuantity,
+    };
+
+    setFieldValue("paymentDetails", updatedPayments);
+  };
 
   const onDeletePayment = (values, setFieldValue, index) => {
     const updated = [...values.paymentDetails];
@@ -198,8 +234,88 @@ export default function GenerateInvoice() {
     setFieldValue("paymentDetails", updated);
   };
 
-  const onSaveInvoice = (values) => {
-    console.log(values);
+  const onSaveInvoice = async (values) => {
+    try {
+      setIsLoadingProcess(true);
+      const now = new Date();
+      const dateWithCurrentTime = new Date(
+        `${values.issueDate}T${now.getHours().toString().padStart(2, "0")}:` +
+          `${now.getMinutes().toString().padStart(2, "0")}:` +
+          `${now.getSeconds().toString().padStart(2, "0")}.${now
+            .getMilliseconds()
+            .toString()
+            .padStart(3, "0")}Z`
+      );
+      const sale = {
+        location: values.location,
+        sequential: "not",
+        accessKey: "not-access-key",
+        issueDate: dateWithCurrentTime,
+        fiscalPeriod: now.getFullYear(),
+        totalWithoutTaxes: values.subtotal,
+        totalDiscount: 0,
+        totalAmount: values.total,
+        receptionStatus: "PENDIENTE",
+        authorizationStatus: "PENDIENTE",
+        errorDescription: "",
+        invoiceUrl: "not-url",
+        approvalUrl: "not-approval-url",
+        ad1: "",
+        ad2: "",
+      };
+      const saleDetails = values.saleDetails.map((item) => ({
+        id: item.id,
+        product: item.id,
+        quantity: item.quantity,
+        unitValue: item.unitValue,
+        totalValue: item.totalValue,
+        valueWithoutTaxes: item.valueWithoutTaxes,
+        totalTaxes: item.totalTaxes,
+        ad1: item.ad1,
+        ad2: item.ad2,
+        ad3: item.ad3,
+        tax: item.tax,
+        unitPriceWithoutTax: item.unitPriceWithoutTax,
+        unitPriceWithTax: item.unitPriceWithTax,
+        totalPriceWithTax: item.totalPriceWithTax,
+        totalPriceWithoutTax: item.totalPriceWithoutTax,
+      }));
+      const paymentDetails = values.paymentDetails.map((item) => ({
+        paymentMethod: item.id,
+        value: item.value,
+      }));
+      const invoiceData = {
+        customer: values.customer,
+        sale,
+        saleDetails,
+        paymentDetails,
+      };
+      const invoice = await createInvoice({ invoiceData });
+      if (!invoice.ok) return;
+      const _id = invoice.sale._id;
+      const updatedInvoice = await updateMetadataInvoice({
+        _id,
+      });
+      if (!updatedInvoice.ok) return;
+      const xmlInvoice = await generateXML({ _id });
+      if (!xmlInvoice.ok) return;
+      const SRIReception = await startReception({ _id });
+      if (!SRIReception.ok) return;
+      const SRIAuthorization = await startAuthorization({ _id });
+      if (!SRIAuthorization.ok) return;
+      const PDFUpload = await startLoadingPDF({ _id });
+      if (!PDFUpload.ok) return;
+      setIsLoadingProcess(false);
+      Swal.close();
+      const valueHTML={...values}
+      valueHTML.location = locations.find((loc) => loc._id == values.location);
+      startSettingInvoiceHTML(valueHTML);
+      showInfo("Factura generada y procesada correctamente.",true, ()=> navigate("/user/resume-invoice"));
+    } catch (error) {
+      showError("Error al procesar factura.");
+      console.error("Error al guardar la factura:", error);
+      setIsLoadingProcess(false);
+    }
   };
 
   useEffect(() => {
@@ -209,8 +325,21 @@ export default function GenerateInvoice() {
   }, [errorMessageCustomer]);
 
   useEffect(() => {
+    if (isLoadingProcess) {
+      showLoading("Procesando, por favor espere...");
+    }
+  }, [isLoadingProcess]);
+
+  useEffect(() => {
+    if (isLoadingCustomer) {
+      showLoading("Cargando cliente, por favor espere...");
+    }
+  }, [isLoadingCustomer]);
+
+  useEffect(() => {
     startLoadingCustomerTypes();
     startLoadingPaymentMethods();
+    startLoadingLocations({ _id: business._id });
   }, []);
 
   return (
@@ -243,13 +372,13 @@ export default function GenerateInvoice() {
           return (
             <Form>
               <div className="grid grid-cols-12 gap-6">
-                <div className="col-span-12 md:col-span-8 space-y-4">
+                <div className="col-span-12 md:col-span-6 space-y-4">
                   <div className="flex items-center gap-2">
                     <label className="text-sm min-w-[100px]">CI/RUC:</label>
                     <Field name="customer.identification">
                       {({ field }) => {
                         return (
-                          <div className="relative flex-1 min-w-[325px]">
+                          <div className="relative flex-1 max-w-[500px]">
                             <input
                               {...field}
                               className="w-full border border-gray-300 rounded px-3 py-2 pr-10"
@@ -333,9 +462,31 @@ export default function GenerateInvoice() {
                   </div>
                 </div>
 
-                <div className="col-span-12 md:col-span-4 space-y-4">
-                  <div>
-                    <label className="text-sm">Fecha emisión</label>
+                <div className="col-span-12 md:col-span-6 space-y-4">
+                  <div className="flex items-center gap-2">
+                    <label className="text-sm min-w-[100px]">Localidad</label>
+                    <Field
+                      as="select"
+                      name="location"
+                      className="w-full border border-gray-300 rounded px-3 py-2"
+                    >
+                      <option value="">Selecciona una localidad</option>
+                      {locations.map((loc, index) => (
+                        <option key={index} value={loc._id}>
+                          {loc.name}
+                        </option>
+                      ))}
+                    </Field>
+                    {errors.location && touched.location && (
+                      <div className="text-red-600 text-sm">
+                        {errors.location}
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <label className="text-sm min-w-[100px]">
+                      Fecha emisión
+                    </label>
                     <Field
                       name="issueDate"
                       type="date"
@@ -347,8 +498,10 @@ export default function GenerateInvoice() {
                       </div>
                     )}
                   </div>
-                  <div>
-                    <label className="text-sm">Guía de remisión</label>
+                  <div className="flex items-center gap-2">
+                    <label className="text-sm min-w-[100px]">
+                      Guía de remisión
+                    </label>
                     <Field
                       name="guideNumber"
                       className="w-full border border-gray-300 rounded px-3 py-2"
@@ -359,10 +512,11 @@ export default function GenerateInvoice() {
                       </div>
                     )}
                   </div>
-
                   <FieldArray name="paymentDetails">
-                    <div>
-                      <label className="text-sm">Forma de pago</label>
+                    <div className="flex items-center gap-2">
+                      <label className="text-sm min-w-[100px]">
+                        Forma de pago
+                      </label>
                       <div className="flex gap-2 mt-1">
                         <select
                           onChange={(e) =>
@@ -391,6 +545,30 @@ export default function GenerateInvoice() {
                         <button
                           type="button"
                           onClick={() => {
+                            const totalPayments = values.paymentDetails.reduce(
+                              (total, payment) => total + payment.value,
+                              0
+                            );
+
+                            const totalSale = values.saleDetails.reduce(
+                              (total, item) =>
+                                total +
+                                item.quantity *
+                                  item.unitValue *
+                                  (1 - (item.discount || 0) / 100),
+                              0
+                            );
+
+                            if (
+                              totalPayments + Number(values.payment.value) >
+                              totalSale
+                            ) {
+                              showInfo(
+                                "El monto de pago no puede ser mayor que el total de la venta"
+                              );
+                              return;
+                            }
+
                             const exists = values.paymentDetails.find(
                               (pd) => pd.id == values.payment.method
                             );
@@ -404,7 +582,12 @@ export default function GenerateInvoice() {
                               );
                             }
                           }}
-                          className="bg-gray-900 text-white px-3 py-2 rounded hover:bg-gray-800"
+                          className={`${
+                            totalPayments === totalSale
+                              ? "bg-gray-400 cursor-not-allowed" // Estilo para cuando el botón está deshabilitado
+                              : "bg-gray-900 hover:bg-gray-800"
+                          } text-white px-3 py-2 rounded`}
+                          disabled={totalPayments === totalSale} // Deshabilitar el botón cuando la suma de pagos sea igual al total
                         >
                           +
                         </button>
@@ -455,15 +638,48 @@ export default function GenerateInvoice() {
                                 type="number"
                                 min={1}
                                 value={payment.value}
+                                step={0.001}
                                 onChange={(e) => {
+                                  const totalPayments =
+                                    values.paymentDetails.reduce(
+                                      (total, payment) => total + payment.value,
+                                      0
+                                    );
+
+                                  const totalSale = values.saleDetails.reduce(
+                                    (total, item) =>
+                                      total +
+                                      item.quantity *
+                                        item.unitValue *
+                                        (1 - (item.discount || 0) / 100),
+                                    0
+                                  );
+
+                                  const remaining = totalSale - totalPayments;
+
+                                  if (remaining <= 0) {
+                                    showInfo(
+                                      "No se puede agregar más pagos, el total ya ha sido cubierto"
+                                    );
+                                    return;
+                                  }
+
+                                  const newValue = parseFloat(e.target.value);
+                                  if (newValue > remaining) {
+                                    showInfo(
+                                      "El pago no puede superar el monto restante"
+                                    );
+                                    return;
+                                  }
+
                                   onUpdatePayment(
                                     values,
                                     setFieldValue,
-                                    payment,
-                                    e.target.value
+                                    payment.id,
+                                    newValue
                                   );
                                 }}
-                                className="w-10 text-right border border-gray-300 rounded px-1"
+                                className="w-15 text-right border border-gray-300 rounded px-1"
                               />
                             </td>
                             <td className="px-3 text-center">
@@ -625,13 +841,18 @@ export default function GenerateInvoice() {
               <div className="flex justify-between items-center mt-6">
                 <button
                   type="reset"
-                  className="flex items-center gap-2 bg-red-600 text-white px-4 py-2 rounded hover:bg-red-500"
+                  className="flex items-center gap-2 bg-red-600 text-white px-4 py-2 rounded hover:bg-red-500 disabled:bg-red-400 disabled:cursor-not-allowed"
                 >
                   <Trash2 size={18} /> Limpiar datos
                 </button>
+
                 <button
                   type="submit"
-                  className="bg-gray-900 text-white px-4 py-2 rounded hover:bg-gray-800"
+                  className={`bg-gray-900 text-white px-4 py-2 rounded ${
+                    !isValid || isTotalValid
+                      ? "hover:bg-gray-800 cursor-not-allowed bg-gray-400"
+                      : "hover:bg-gray-800"
+                  }`}
                   disabled={!isValid || isTotalValid}
                 >
                   Guardar

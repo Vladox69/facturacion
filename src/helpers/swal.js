@@ -27,11 +27,15 @@ export const showError = (message) => {
   });
 };
 
-export const showInfo = (message) => {
+export const showInfo = (message,isNavigate=false,navigate=null) => {
   baseSwal.fire({
     icon: 'info',
     title: message,
     confirmButtonText: 'Entendido',
+  }).then(()=>{
+    if(isNavigate){
+      navigate();
+    }
   });
 };
 
@@ -45,4 +49,15 @@ export const showConfirm = async (message) => {
   });
 
   return result.isConfirmed;
+};
+
+export const showLoading = (message = 'Cargando...') => {
+  baseSwal.fire({
+    title: message,
+    allowOutsideClick: false,
+    allowEscapeKey: false,
+    didOpen: () => {
+      Swal.showLoading();
+    },
+  });
 };

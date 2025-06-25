@@ -26,7 +26,6 @@ export const useCustomerStore = () => {
     try {
       const params = new URLSearchParams({ q: query });
       const { data } = await invoiceApi.get(`/customer/search?${params}`);
-      console.log(data);
       if (!data.customer) {
         dispatch(onErrorCustomer("No se encontró al cliente"));
         setTimeout(() => {

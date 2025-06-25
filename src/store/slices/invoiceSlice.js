@@ -2,29 +2,33 @@ import { createSlice } from "@reduxjs/toolkit";
 export const invoiceSlice = createSlice({
   name: "invoice",
   initialState: {
-    isSaving: false,
-    invoiceData: null,
+    isSavingInvoice: false,
+    invoiceData: {},
+    invoiceHTML:{},
     errorMessageInvoice: undefined,
-    successMessage: undefined,
+    successMessageInvoice: undefined,
   },
   reducers: {
     onSavingInvoice: (state) => {
-      state.isSaving = true;
+      state.isSavingInvoice = true;
       state.errorMessageInvoice = undefined;
-      state.successMessage = undefined;
+      state.successMessageInvoice = undefined;
     },
     onSaveInvoiceSuccess: (state, { payload }) => {
-      state.isSaving = false;
+      state.isSavingInvoice = false;
       state.invoiceData = payload;
-      state.successMessage = "Factura creada exitosamente";
+      state.successMessageInvoice = "Factura creada exitosamente";
+    },
+    setInvoiceHTML: (state, { payload }) => {
+      state.invoiceHTML = payload;
     },
     onSaveInvoiceError: (state, { payload }) => {
-      state.isSaving = false;
-      state.errorMessage = payload;
+      state.isSavingInvoice = false;
+      state.errorMessageInvoice = payload;
     },
     clearInvoiceMessages: (state) => {
-      state.successMessage = undefined;
-      state.errorMessage = undefined;
+      state.successMessageInvoice = undefined;
+      state.errorMessageInvoice = undefined;
     },
   },
 });
@@ -34,4 +38,5 @@ export const {
   onSaveInvoiceSuccess,
   onSaveInvoiceError,
   clearInvoiceMessages,
+  setInvoiceHTML,
 } = invoiceSlice.actions;

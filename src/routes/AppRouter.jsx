@@ -10,6 +10,8 @@ import StaffPage from "../pages/user/Staff";
 import ProductPage from "../pages/user/Product";
 import GenerateInvoice from "../pages/user/GenerateInvoice";
 import ProtectedRoute from "../components/ProtectedRoute";
+import ResumeInvoice from "../pages/user/ResumeInvoice";
+import Invoices from "../pages/user/Invoices";
 
 export const AppRouter = () => {
   return (
@@ -30,7 +32,9 @@ export const AppRouter = () => {
           <Route path="location" element={<LocationPage />} />
           <Route path="staff" element={<StaffPage />} />
           <Route path="products" element={<ProductPage />} />
-          <Route path="invoices" element={<GenerateInvoice />} />
+          <Route path="generate-invoice" element={<GenerateInvoice />} />
+          <Route path="resume-invoice" element={<ResumeInvoice />} />
+          <Route path="invoices" element={<Invoices />} />
         </Route>
       </Route>
 

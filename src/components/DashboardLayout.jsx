@@ -11,14 +11,15 @@ import {
   UserCog,
   Package,
   FileText,
-  LogOut
+  LogOut,
+  FilePlus,
 } from "lucide-react";
 import { useAuthStore } from "../hooks";
 
 export default function DashboardLayout() {
   const [isOpen, setIsOpen] = useState(true);
   const location = useLocation();
-  const { startLogout,user } = useAuthStore();
+  const { startLogout, user } = useAuthStore();
   // Detectar rol según ruta
   const rolePath = location.pathname.startsWith("/admin")
     ? "admin"
@@ -46,6 +47,11 @@ export default function DashboardLayout() {
         name: "Mi Perfil",
         icon: <UserIcon size={20} />,
         path: "/user/profile",
+      },
+      {
+        name: "Genrar factura",
+        icon: <FilePlus size={20} />,
+        path: "/user/generate-invoice",
       },
       {
         name: "Facturas",
@@ -83,7 +89,7 @@ export default function DashboardLayout() {
             <Menu size={24} />
           </button>
         </div>
-        {isOpen&&<p> {user.name} </p>}
+        {isOpen && <p> {user.name} </p>}
         <nav className="flex flex-col gap-4">
           {navItems.map((item) => (
             <Link

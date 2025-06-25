@@ -6,6 +6,10 @@ import { invoiceSlice } from "./slices/invoiceSlice";
 import { customerTypeSlice } from "./slices/customerTypeSlice";
 import { customerSlice } from "./slices/customerSlice";
 import { paymentMethodSlice } from "./slices/paymentMethodSlice";
+import { locationSlice } from "./slices/locationSlice";
+import { SRISlice } from "./slices/SRISlice";
+import { PDFSlice } from "./slices/PDFSlice";
+import { saleSlice } from "./slices/saleSlice";
 
 export const store = configureStore({
   reducer: {
@@ -15,6 +19,10 @@ export const store = configureStore({
     invoice: invoiceSlice.reducer,
     customerType: customerTypeSlice.reducer,
     customer: customerSlice.reducer,
-    paymentMethod:paymentMethodSlice.reducer
+    paymentMethod: paymentMethodSlice.reducer,
+    location: locationSlice.reducer,
+    SRI:SRISlice.reducer,
+    PDF: PDFSlice.reducer,
+    sale: saleSlice.reducer,
   },
 });
