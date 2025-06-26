@@ -10,6 +10,7 @@ import { locationSlice } from "./slices/locationSlice";
 import { SRISlice } from "./slices/SRISlice";
 import { PDFSlice } from "./slices/PDFSlice";
 import { saleSlice } from "./slices/saleSlice";
+import { mailSlice } from "./slices/mailSlice";
 
 export const store = configureStore({
   reducer: {
@@ -24,5 +25,6 @@ export const store = configureStore({
     SRI:SRISlice.reducer,
     PDF: PDFSlice.reducer,
     sale: saleSlice.reducer,
+    mail: mailSlice.reducer,
   },
 });

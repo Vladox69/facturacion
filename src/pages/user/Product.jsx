@@ -3,6 +3,8 @@ import { Plus } from "lucide-react";
 import ProductForm from "../../components/products/ProductForm";
 import ProductTable from "../../components/products/ProductTable";
 import { useBusinessStore, useProductStore } from "../../hooks";
+import Swal from "sweetalert2";
+import { showLoading } from "../../helpers/swal";
 
 export default function ProductPage() {
   const { products, startLoadingProducts } = useProductStore();
@@ -28,6 +30,14 @@ export default function ProductPage() {
   useEffect(() => {
     startLoadingProducts({ _id: business._id });
   }, []);
+
+  useEffect(() => {
+    if (products.length === 0) {
+      showLoading("Cargando productos...");
+    } else {
+      Swal.close();
+    }
+  }, [products]);          
 
   return (
     <div className="p-6 space-y-6">

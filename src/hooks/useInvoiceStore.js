@@ -6,6 +6,7 @@ import {
   setInvoiceHTML,
 } from "../store";
 import invoiceApi from "../api/invoiceApi";
+import { showError } from "../helpers/swal";
 
 export const useInvoiceStore = () => {
   const {
@@ -66,6 +67,24 @@ export const useInvoiceStore = () => {
     dispatch(setInvoiceHTML(data));
   };
 
+  const downloadFile = async(data) => {
+    try {
+      const response = await invoiceApi.post("/mail/download-file", data, {
+        responseType: "blob",
+      });
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `factura_${data.accessKey}.${data.format}`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (error) {
+      console.error("Error al descargar la factura:", error);
+      showError("Error al descargar la factura");
+    }
+  };
+
   return {
     //* Propiedad
     isSavingInvoice,
@@ -77,6 +96,7 @@ export const useInvoiceStore = () => {
     createInvoice,
     updateMetadataInvoice,
     generateXML,
-    startSettingInvoiceHTML
+    startSettingInvoiceHTML,
+    downloadFile,
   };
 };

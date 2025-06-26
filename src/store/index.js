@@ -10,3 +10,4 @@ export * from './slices/locationSlice';
 export * from './slices/SRISlice';
 export * from './slices/PDFSlice';
 export * from './slices/saleSlice';
+export * from './slices/mailSlice';

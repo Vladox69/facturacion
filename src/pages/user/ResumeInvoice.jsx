@@ -1,7 +1,23 @@
-import { useInvoiceStore } from "../../hooks";
+import { useEffect } from "react";
+import { useInvoiceStore, useMailStore } from "../../hooks";
+import { showLoading } from "../../helpers/swal";
+import Swal from "sweetalert2";
 
 export default function ResumeInvoice() {
-  const { invoiceHTML } = useInvoiceStore();
+  const { invoiceHTML, invoiceData } = useInvoiceStore();
+  const { startSendingMail, isSendingMail } = useMailStore();
+
+  const sendEmail = () => {
+    startSendingMail({ _id: invoiceData._id })
+  };
+
+  useEffect(() => {
+    if (isSendingMail) {
+      showLoading("Enviando correo...");
+    } else {
+      Swal.close();
+    }
+  }, [isSendingMail]);
 
   if (Object.keys(invoiceHTML).length === 0) {
     return <p className="text-gray-500">No hay datos disponibles.</p>;
@@ -159,6 +175,14 @@ export default function ResumeInvoice() {
           Factura generada electrónicamente. Gracias por su compra.
         </footer>
       </div>
+      <button
+        type="submit"
+        className={"bg-gray-900 text-white px-4 py-2 rounded "}
+        onClick={sendEmail}
+      >
+        Enviar Factura
+        <span className="ml-2">📤</span>
+      </button>
     </div>
   );
 }

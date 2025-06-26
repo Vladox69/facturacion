@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { useBusinessStore, useSaleStore } from "../../hooks";
 import ActionsMenu from "../../components/ActionsMenu";
+import { showLoading } from "../../helpers/swal";
+import Swal from "sweetalert2";
 
 export default function Invoices() {
   const { business } = useBusinessStore();
@@ -10,10 +12,16 @@ export default function Invoices() {
   const rowsPerPage = 10;
 
   useEffect(() => {
-    if (business?._id) {
-      startLoadingSales({ _id: business._id });
+    startLoadingSales({ _id: business._id });
+  }, []);
+
+  useEffect(() => {
+    if (sales.length == 0) {
+      showLoading("Cargando facturas...");
+    } else {
+      Swal.close();
     }
-  }, [business]);
+  }, [sales]);
 
   // Lógica de paginación
   const totalPages = Math.ceil(sales.length / rowsPerPage);
