@@ -20,7 +20,7 @@ export default function ProductSearchSelect({ onSelect }) {
   useEffect(() => {
     const delay = setTimeout(() => {
       searchingProducts({query,business:business._id});
-    }, 400);
+    }, 600);
 
     return () => clearTimeout(delay);
   }, [query]);

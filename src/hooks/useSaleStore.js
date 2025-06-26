@@ -1,9 +1,9 @@
 import { useDispatch, useSelector } from "react-redux";
-import { onLoadingSales, onLoadSales } from "../store";
+import { onLoadCharts, onLoadingSales, onLoadSales } from "../store";
 import invoiceApi from "../api/invoiceApi";
 
 export const useSaleStore = () => {
-  const { isLoadingSales, sales, errorMessageSales } = useSelector(
+  const { isLoadingSales, sales, errorMessageSales, topProducts, topCustomers } = useSelector(
     (state) => state.sale
   );
   const dispatch = useDispatch();
@@ -19,12 +19,26 @@ export const useSaleStore = () => {
     }
   };
 
+  const startLoadingCharts= async({_id})=>{
+    try {
+      dispatch(onLoadingSales());
+      const { data } = await invoiceApi.get(`/sale/stats/${_id}`);
+      dispatch(onLoadCharts(data));
+    } catch (error) {
+      console.log(error);
+      dispatch(errorMessageSales("Error al cargar gráficos de ventas"));
+    }
+  }
+
   return {
     //* Propiedades
     isLoadingSales,
     sales,
     errorMessageSales,
+    topProducts,
+    topCustomers,
     //* Métodos
     startLoadingSales,
+    startLoadingCharts
   };
 };

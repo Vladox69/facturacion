@@ -1,9 +1,10 @@
-import { useState } from "react";
 import { Plus } from "lucide-react";
 import ProductForm from "../../components/products/ProductForm";
 import ProductTable from "../../components/products/ProductTable";
+import { showInfo } from "../../helpers/swal";
 
 export default function ProductPage() {
+  /*
   const [editing, setEditing] = useState(null);
   const [showForm, setShowForm] = useState(false);
 
@@ -20,23 +21,24 @@ export default function ProductPage() {
       console.log(id);
     }
   };
+*/
+  const onDemo = () => {
+    showInfo("Esta funcionalidad no está disponible en la modalidad demo.");
+  };
 
   return (
     <div className="p-6 space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold">Productos</h1>
         <button
-          onClick={() => {
-            setShowForm(true);
-            setEditing(null);
-          }}
+          onClick={onDemo}
           className="flex items-center gap-2 bg-gray-900 text-white px-4 py-2 rounded hover:bg-gray-800"
         >
-          <Plus size={18} /> Añadir
+          <Plus size={18} /> Añadir Producto
         </button>
       </div>
 
-      {showForm && (
+      {/*showForm && (
         <div className="bg-white p-6 rounded-md">
           <h2 className="text-xl font-semibold">Registrar Producto</h2>
           <p className="text-gray-500 mb-4">
@@ -51,14 +53,11 @@ export default function ProductPage() {
             }}
           />
         </div>
-      )}
+      )*/}
 
       <ProductTable
-        onEdit={(p) => {
-          setEditing(p);
-          setShowForm(true);
-        }}
-        onDelete={deleteProduct}
+        onEdit={onDemo}
+        onDelete={onDemo}
       />
     </div>
   );

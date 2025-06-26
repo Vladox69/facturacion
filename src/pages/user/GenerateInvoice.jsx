@@ -14,7 +14,7 @@ import {
   useProductStore,
   useSRIStore,
 } from "../../hooks";
-import { showError, showInfo, showLoading } from "../../helpers/swal";
+import { showError, showInfo, showLoading, showSuccess } from "../../helpers/swal";
 import { calculateProductDetails } from "../../helpers";
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
@@ -185,9 +185,16 @@ export default function GenerateInvoice() {
       },
       { subtotal: 0, ivaTotal: 0, iceTotal: 0, total: 0 }
     );
-    setFieldValue("subtotal", updatedTotals.subtotal);
-    setFieldValue("ivaTotal", updatedTotals.ivaTotal);
-    setFieldValue("total", updatedTotals.total);
+
+    // Redondear a 2 decimales
+    const subtotal = parseFloat(updatedTotals.subtotal.toFixed(2));
+    const ivaTotal = parseFloat(updatedTotals.ivaTotal.toFixed(2));
+    const total = parseFloat(updatedTotals.total.toFixed(2));
+
+    // Setear en el formulario
+    setFieldValue("subtotal", subtotal);
+    setFieldValue("ivaTotal", ivaTotal);
+    setFieldValue("total", total);
   };
 
   const onDeleteProduct = (values, setFieldValue, index) => {
@@ -234,7 +241,29 @@ export default function GenerateInvoice() {
     setFieldValue("paymentDetails", updated);
   };
 
-  const onSaveInvoice = async (values) => {
+  const onSaveInvoice = async (values, setFieldValue) => {
+    if (
+      values.total > 50 &&
+      values.customer.identificationType.description ==
+        "VENTA A CONSUMIDOR FINAL"
+    ) {
+      showError("Debe seleccionar un cliente para facturas mayores a $50.");
+      setFieldValue("customer", {
+        _id: "",
+        fullName: "",
+        identification: "",
+        email: "",
+        phone: "",
+        address: "",
+        identificationType: {
+          _id: "",
+          description: "",
+          code: "",
+        },
+      });
+      return;
+    }
+
     try {
       setIsLoadingProcess(true);
       const now = new Date();
@@ -307,10 +336,12 @@ export default function GenerateInvoice() {
       if (!PDFUpload.ok) return;
       setIsLoadingProcess(false);
       Swal.close();
-      const valueHTML={...values}
+      const valueHTML = { ...values };
       valueHTML.location = locations.find((loc) => loc._id == values.location);
       startSettingInvoiceHTML(valueHTML);
-      showInfo("Factura generada y procesada correctamente.",true, ()=> navigate("/user/resume-invoice"));
+      showSuccess("Factura generada y procesada correctamente.", true, () =>
+        navigate("/user/resume-invoice")
+      );
     } catch (error) {
       showError("Error al procesar factura.");
       console.error("Error al guardar la factura:", error);
@@ -348,13 +379,7 @@ export default function GenerateInvoice() {
         Generar Factura
       </div>
 
-      <Formik
-        initialValues={initialValues}
-        validationSchema={invoiceSchema}
-        onSubmit={(values) => {
-          onSaveInvoice(values);
-        }}
-      >
+      <Formik initialValues={initialValues} validationSchema={invoiceSchema}>
         {({ values, setFieldValue, isValid, errors, touched }) => {
           const totalPayments = values.paymentDetails.reduce(
             (total, payment) => total + payment.value,
@@ -378,7 +403,7 @@ export default function GenerateInvoice() {
                     <Field name="customer.identification">
                       {({ field }) => {
                         return (
-                          <div className="relative flex-1 max-w-[500px]">
+                          <div className="relative flex-1">
                             <input
                               {...field}
                               className="w-full border border-gray-300 rounded px-3 py-2 pr-10"
@@ -847,13 +872,13 @@ export default function GenerateInvoice() {
                 </button>
 
                 <button
-                  type="submit"
                   className={`bg-gray-900 text-white px-4 py-2 rounded ${
                     !isValid || isTotalValid
                       ? "hover:bg-gray-800 cursor-not-allowed bg-gray-400"
                       : "hover:bg-gray-800"
                   }`}
                   disabled={!isValid || isTotalValid}
+                  onClick={() => onSaveInvoice(values, setFieldValue)}
                 >
                   Guardar
                 </button>

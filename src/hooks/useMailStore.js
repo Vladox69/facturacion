@@ -11,7 +11,6 @@ export const useMailStore = () => {
     dispatch(onLoadingMail());
     try {
       const { data } = await invoiceApi.post(`/mail/send-mail/${_id}`);
-      console.log(data);
       dispatch(onSendMail());
       return data;
     } catch (error) {

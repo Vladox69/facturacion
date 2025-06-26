@@ -11,7 +11,7 @@ import ProtectedRoute from "../components/ProtectedRoute";
 
 const routes = [
   {
-    path: "/login",
+    path: "/",
     element: <Login />,
   },
   {

@@ -2,7 +2,7 @@ import { Navigate, Outlet } from 'react-router-dom';
 import { useAuthStore, useBusinessStore } from '../hooks';
 import { useEffect } from 'react';
 
-const ProtectedRoute = ({ role, redirectTo = "/login" }) => {
+const ProtectedRoute = ({ role, redirectTo = "/" }) => {
   const { status, user, checkAuthToken } = useAuthStore();
   const { startLoadingBusinessFromLocalStorage } = useBusinessStore();
   useEffect(() => {

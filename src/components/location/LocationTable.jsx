@@ -1,6 +1,25 @@
 import { Edit, Trash2 } from "lucide-react";
+import { useBusinessStore, useLocationStore } from "../../hooks";
+import { useEffect } from "react";
+import Swal from "sweetalert2";
+import { showLoading } from "../../helpers/swal";
 
-export default function LocationTable({ locations, onEdit, onDelete }) {
+export default function LocationTable({ onEdit, onDelete }) {
+  const { business } = useBusinessStore();
+  const { locations, startLoadingLocations } = useLocationStore();
+
+  useEffect(() => {
+    startLoadingLocations({ _id: business._id });
+  }, []);
+
+  useEffect(() => {
+    if (locations.length === 0) {
+      showLoading("Cargando sucursales...");
+    } else {
+      Swal.close();
+    }
+  }, [locations]);
+
   return (
     <div className="overflow-hidden rounded-md bg-white shadow-sm">
       <table className="w-full table-auto text-sm">
@@ -22,10 +41,16 @@ export default function LocationTable({ locations, onEdit, onDelete }) {
               <td className="p-3">{l.phone}</td>
               <td className="p-3 text-center">
                 <div className="flex justify-center gap-2">
-                  <button onClick={() => onEdit(l)} className="text-blue-600 flex items-center gap-1 hover:underline">
+                  <button
+                    onClick={() => onEdit(l)}
+                    className="text-blue-600 flex items-center gap-1 hover:underline"
+                  >
                     <Edit size={16} />
                   </button>
-                  <button onClick={() => onDelete(l._id)} className="text-red-600 flex items-center gap-1 hover:underline">
+                  <button
+                    onClick={() => onDelete(l._id)}
+                    className="text-red-600 flex items-center gap-1 hover:underline"
+                  >
                     <Trash2 size={16} />
                   </button>
                 </div>

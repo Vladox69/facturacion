@@ -13,6 +13,7 @@ import {
   FileText,
   LogOut,
   FilePlus,
+  Aperture
 } from "lucide-react";
 import { useAuthStore } from "../hooks";
 
@@ -43,10 +44,15 @@ export default function DashboardLayout() {
       },
     ],
     user: [
-      {
+      /*{
         name: "Mi Perfil",
         icon: <UserIcon size={20} />,
         path: "/user/profile",
+      },*/
+      {
+        name: "Dashboard",
+        icon: <Aperture size={20} />,
+        path: "/user/",
       },
       {
         name: "Genrar factura",

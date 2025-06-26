@@ -15,7 +15,7 @@ export default function ProductTable({ onEdit, onDelete }) {
   }, []);
 
   useEffect(() => {
-    if (products.length === 0) {
+    if (products.length == 0) {
       showLoading("Cargando productos...");
     } else {
       Swal.close();

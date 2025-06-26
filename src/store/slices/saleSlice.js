@@ -4,12 +4,13 @@ export const saleSlice = createSlice({
   initialState: {
     isLoadingSales: false,
     sales: [],
+    topProducts: [],
+    topCustomers: [],
     errorMessageSales: undefined,
   },
   reducers: {
     onLoadingSales: (state) => {
       state.isLoadingSales = true;
-      state.sales = [];
       state.errorMessageSales = undefined;
     },
     onLoadSales: (state, { payload = [] }) => {
@@ -22,6 +23,26 @@ export const saleSlice = createSlice({
         }
       });
     },
+    onLoadCharts: (state, { payload }) => {
+      state.isLoadingSales = false;
+      const { topProducts = [], topCustomers = [] } = payload;
+      topProducts.forEach((product) => {
+        const exists = state.topProducts.some(
+          (dbProduct) => dbProduct._id === product._id
+        );
+        if (!exists) {
+          state.topProducts.push(product);
+        }
+      });
+      topCustomers.forEach((customer) => {
+        const exists = state.topCustomers.some(
+          (dbCustomer) => dbCustomer._id === customer._id
+        );
+        if (!exists) {
+          state.topCustomers.push(customer);
+        }
+      });
+    },
     onErrorSales: (state, { payload }) => {
       state.isLoadingSales = false;
       state.errorMessageSales = payload;
@@ -30,4 +51,4 @@ export const saleSlice = createSlice({
   },
 });
 // Action creators are generated for each case reducer function
-export const { onLoadingSales, onErrorSales, onLoadSales } = saleSlice.actions;
+export const { onLoadingSales, onErrorSales, onLoadSales, onLoadCharts } = saleSlice.actions;

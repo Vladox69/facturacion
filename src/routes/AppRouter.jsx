@@ -12,12 +12,12 @@ import GenerateInvoice from "../pages/user/GenerateInvoice";
 import ProtectedRoute from "../components/ProtectedRoute";
 import ResumeInvoice from "../pages/user/ResumeInvoice";
 import Invoices from "../pages/user/Invoices";
+import Board from "../pages/user/Board";
 
 export const AppRouter = () => {
   return (
     <Routes>
-      <Route path="/login" element={<Login />} />
-
+      <Route path="/" element={<Login />} />
       {/* ADMIN */}
       <Route element={<ProtectedRoute role="ADMIN" />}>
         <Route path="/admin" element={<DashboardLayout />}>
@@ -29,6 +29,7 @@ export const AppRouter = () => {
       {/* USER */}
       <Route element={<ProtectedRoute role="USER" />}>
         <Route path="/user" element={<DashboardLayout />}>
+          <Route path="" element={<Board />} />
           <Route path="location" element={<LocationPage />} />
           <Route path="staff" element={<StaffPage />} />
           <Route path="products" element={<ProductPage />} />

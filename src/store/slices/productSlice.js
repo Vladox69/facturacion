@@ -12,7 +12,6 @@ export const productSlice = createSlice({
     onLoadingProduct: (state) => {
       state.isLoading = true;
       state.product = {};
-      state.products = [];
       state.errorMessage = undefined;
     },
     onLoadProducts: (state, { payload = [] }) => {

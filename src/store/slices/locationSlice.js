@@ -11,7 +11,6 @@ export const locationSlice = createSlice({
     onLoadingLocation: (state) => {
       state.isLoadingLocation = true;
       state.location = {};
-      state.locations = [];
     },
     onLoadLocations: (state, { payload = [] }) => {
       state.isLoadingLocation = false;

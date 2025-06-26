@@ -1,19 +1,30 @@
 import { useEffect } from "react";
 import { useInvoiceStore, useMailStore } from "../../hooks";
-import { showLoading } from "../../helpers/swal";
+import { showError, showLoading, showSuccess } from "../../helpers/swal";
 import Swal from "sweetalert2";
+import { useNavigate } from "react-router-dom";
 
 export default function ResumeInvoice() {
   const { invoiceHTML, invoiceData } = useInvoiceStore();
   const { startSendingMail, isSendingMail } = useMailStore();
+  const navigate = useNavigate();
 
-  const sendEmail = () => {
-    startSendingMail({ _id: invoiceData._id })
+  const sendEmail = async() => {
+    const emailResponse = await startSendingMail({ _id: invoiceData._id });
+    if(emailResponse.ok){
+      showSuccess("Correo enviado exitosamente");
+    }else{
+      showError("Error al enviar el correo");
+    }
+  };
+
+  const successMessage = () => {
+    showSuccess("Correo enviado exitosamente", true, () => navigate("/user/invoices"));
   };
 
   useEffect(() => {
     if (isSendingMail) {
-      showLoading("Enviando correo...");
+      showLoading("Enviando correo...", true, successMessage);
     } else {
       Swal.close();
     }
@@ -37,7 +48,7 @@ export default function ResumeInvoice() {
   return (
     <div className="bg-white text-gray-900 p-6 space-y-6 min-h-screen">
       <div className="text-2xl font-semibold border-b border-gray-300 pb-3">
-        Generar Factura
+        Resumen de Factura
       </div>
       <div className="mx-auto bg-white text-gray-900 p-6 rounded-lg">
         {/* Encabezado */}
