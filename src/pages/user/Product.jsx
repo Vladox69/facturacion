@@ -1,14 +1,9 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Plus } from "lucide-react";
 import ProductForm from "../../components/products/ProductForm";
 import ProductTable from "../../components/products/ProductTable";
-import { useBusinessStore, useProductStore } from "../../hooks";
-import Swal from "sweetalert2";
-import { showLoading } from "../../helpers/swal";
 
 export default function ProductPage() {
-  const { products, startLoadingProducts } = useProductStore();
-  const { business } = useBusinessStore();
   const [editing, setEditing] = useState(null);
   const [showForm, setShowForm] = useState(false);
 
@@ -25,19 +20,6 @@ export default function ProductPage() {
       console.log(id);
     }
   };
-
-
-  useEffect(() => {
-    startLoadingProducts({ _id: business._id });
-  }, []);
-
-  useEffect(() => {
-    if (products.length === 0) {
-      showLoading("Cargando productos...");
-    } else {
-      Swal.close();
-    }
-  }, [products]);          
 
   return (
     <div className="p-6 space-y-6">
@@ -72,7 +54,6 @@ export default function ProductPage() {
       )}
 
       <ProductTable
-        products={products}
         onEdit={(p) => {
           setEditing(p);
           setShowForm(true);
