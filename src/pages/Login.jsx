@@ -2,15 +2,26 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import { useAuthStore, useBusinessStore } from "../hooks";
 import { useEffect, useState } from "react";
-import { showError } from "../helpers/swal";
+import { showError, showInfo } from "../helpers/swal";
 import { Navigate } from "react-router-dom";
+import { getEnvVariables } from "../helpers";
 
 export default function Login() {
-
-  const { startLogin, startRegister, errorMessage, status, user, checkAuthToken } = useAuthStore();
+  const {
+    startLogin,
+    startRegister,
+    errorMessage,
+    status,
+    user,
+    checkAuthToken,
+  } = useAuthStore();
+  const { VITE_EMAIL, VITE_PASSWORD } = getEnvVariables();
   const { startLoadingBusiness } = useBusinessStore();
   const [isRegistering, setIsRegistering] = useState(false);
 
+  const onDemo=()=>{
+    showInfo("Esta funcionalidad no está disponible en la modalidad demo.");
+  }
   // Formik para login
   const loginFormik = useFormik({
     initialValues: {
@@ -35,13 +46,25 @@ export default function Login() {
     },
     validationSchema: Yup.object({
       registerName: Yup.string().required("Nombre requerido"),
-      registerEmail: Yup.string().email("Correo inválido").required("Correo requerido"),
-      registerPassword: Yup.string().min(6, "Mínimo 6 caracteres").required("Contraseña requerida"),
+      registerEmail: Yup.string()
+        .email("Correo inválido")
+        .required("Correo requerido"),
+      registerPassword: Yup.string()
+        .min(6, "Mínimo 6 caracteres")
+        .required("Contraseña requerida"),
     }),
-    onSubmit: ({ registerEmail: email, registerName: name, registerPassword: password }) => {
-      startRegister({ email, password, name })
+    onSubmit: ({
+      registerEmail: email,
+      registerName: name,
+      registerPassword: password,
+    }) => {
+      startRegister({ email, password, name });
     },
   });
+
+  const onClicDemo = () => {
+    startLogin({ email: VITE_EMAIL, password: VITE_PASSWORD });
+  };
 
   useEffect(() => {
     if (errorMessage) {
@@ -50,23 +73,22 @@ export default function Login() {
   }, [errorMessage]);
 
   useEffect(() => {
-    if(status==="authenticated"&&user?.uid){
-      startLoadingBusiness({_id:user.uid});
+    if (status === "authenticated" && user?.uid) {
+      startLoadingBusiness({ _id: user.uid });
     }
-  }, [status, user])
-  
+  }, [status, user]);
 
   useEffect(() => {
     checkAuthToken();
   }, []);
 
-  if (status === 'checking') {
+  if (status === "checking") {
     return <p className="text-center text-gray-600">Verificando sesión...</p>;
   }
 
-  if (status === 'authenticated') {
+  if (status === "authenticated") {
     // Redirige al dashboard según el rol
-    const target = user.role === 'ADMIN' ? '/admin' : '/user';
+    const target = user.role === "ADMIN" ? "/admin" : "/user";
     return <Navigate to={target} />;
   }
 
@@ -78,9 +100,12 @@ export default function Login() {
         </h2>
 
         {!isRegistering ? (
-          <form onSubmit={loginFormik.handleSubmit} className="space-y-4">
+          <form className="space-y-4">
             <div>
-              <label htmlFor="loginEmail" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="loginEmail"
+                className="block text-sm font-medium text-gray-700"
+              >
                 Correo electrónico
               </label>
               <input
@@ -92,7 +117,10 @@ export default function Login() {
               />
             </div>
             <div>
-              <label htmlFor="loginPassword" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="loginPassword"
+                className="block text-sm font-medium text-gray-700"
+              >
                 Contraseña
               </label>
               <input
@@ -104,16 +132,27 @@ export default function Login() {
               />
             </div>
             <button
-              type="submit"
-              className="w-full py-2 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              type="button"
+              className="w-full py-2 px-4 bg-blue-700 hover:bg-blue-500 text-white rounded-lg"
+              onClick={onDemo}
             >
               Iniciar sesión
+            </button>
+            <button
+              type="button"
+              className="w-full py-2 px-4 bg-rose-700 hover:bg-rose-600 text-white rounded-lg"
+              onClick={onClicDemo}
+            >
+              Usar Demo
             </button>
           </form>
         ) : (
           <form onSubmit={registerFormik.handleSubmit} className="space-y-4">
             <div>
-              <label htmlFor="registerName" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="registerName"
+                className="block text-sm font-medium text-gray-700"
+              >
                 Nombre completo
               </label>
               <input
@@ -125,7 +164,10 @@ export default function Login() {
               />
             </div>
             <div>
-              <label htmlFor="registerEmail" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="registerEmail"
+                className="block text-sm font-medium text-gray-700"
+              >
                 Correo electrónico
               </label>
               <input
@@ -137,7 +179,10 @@ export default function Login() {
               />
             </div>
             <div>
-              <label htmlFor="registerPassword" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="registerPassword"
+                className="block text-sm font-medium text-gray-700"
+              >
                 Contraseña
               </label>
               <input
@@ -150,7 +195,8 @@ export default function Login() {
             </div>
             <button
               type="submit"
-              className="w-full py-2 px-4 bg-green-600 text-white rounded-lg hover:bg-green-700"
+              className="w-full py-2 px-4 bg-green-700 hover:bg-green-500 text-white rounded-lg"
+              onClick={onDemo}
             >
               Registrarse
             </button>

@@ -796,19 +796,7 @@ export default function GenerateInvoice() {
                                 ${item.unitValue.toFixed(2)}
                               </td>
                               <td className="px-3 text-right">
-                                <input
-                                  type="number"
-                                  min={0}
-                                  max={100}
-                                  value={item.discount || 0}
-                                  onChange={(e) =>
-                                    setFieldValue(
-                                      `saleDetails[${index}].discount`,
-                                      Number(e.target.value)
-                                    )
-                                  }
-                                  className="w-14 text-right border border-gray-300 rounded px-1"
-                                />
+                                0
                               </td>
                               <td className="px-3 text-right">
                                 $

@@ -40,7 +40,7 @@ export default function Invoices() {
         Facturas
       </div>
 
-      <div className="overflow-hidden rounded-md bg-white shadow-sm">
+      <div className="rounded-md bg-white shadow-sm overflow-visible relative">
         <table className="w-full table-auto text-sm">
           <thead className="bg-gray-50 text-gray-600 font-semibold">
             <tr>
